@@ -228,6 +228,62 @@ module ModuleFunction
 	end subroutine Calc_Fluctuation
 
 
+	
+	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+
+		implicit none
+
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part
+		integer :: nx,ny,N_particle,i,j,k
+		real, allocatable :: StreamFunction(:,:), temp(:,:)
+		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
+		real, dimension(5) :: MeshCaracteristics
+		real, dimension(2) :: coord
+		integer, dimension(4) :: Box
+
+		delta = MeshCaracteristics(5)
+		nx = size(TKE(1,:))
+		ny = size(TKE(:,1))
+		allocate (temp(ny,nx))
+		
+		N_particle = size(Particle(:,1))
+
+		do k = 1, N_particle
+		
+			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
+			
+			do i = Box(1), Box(2)
+				do j = Box(3), Box(4)
+					if (vtkMask(i,j) == 1) then
+					
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+					
+						coord(1) = x_grid-Particle(k,2)
+						coord(2) = y_grid-Particle(k,3)
+					
+						TKE_grid = TKE(i,j)
+					
+						temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
+					
+					end if
+				end do
+			end do
+		end do
+		
+		StreamFunction = temp
+		
+		deallocate (temp)
+
+	end subroutine Calc_Fluctuation_opt
+	
+	
+	
+	
+	
+	
+	
 	function Calc_stream(coord,TKE_part,Lambda_part)
 
 		implicit none
@@ -274,6 +330,8 @@ module ModuleFunction
 
 
 
+	
+	
 	function trapz(y,delta)
 		
 		implicit none
@@ -327,8 +385,44 @@ module ModuleFunction
 
 	end function GetSeeder
 
-
-
-
-
+	
+	
+	
+	function GetBox(x_part,y_part,Lambda_part,MeshCaracteristics)
+	
+		real :: x_part, y_part, Lambda_part, x_min, y_min, x_max, y_max
+		real :: delta
+		integer :: j_min, j_max, i_min, i_max
+		
+		integer, dimension(4) :: GetBox !GetBox will get [i_min,i_max,j_min,j_max] then indexes of [y_min, y_max, x_min, x_max]
+		real,dimension(5) :: MeshCaracteristics
+		
+		delta = MeshCaracteristics(5)
+		
+		x_min = x_part - 2*Lambda_part
+		x_max = x_part + 2*Lambda_part
+		y_min = y_part - 2*Lambda_part
+		y_max = y_part + 2*Lambda_part
+		
+		
+		if (x_min < MeshCaracteristics(1)) then
+			x_min = MeshCaracteristics(1)+1e-12
+		end if
+		if (x_max > MeshCaracteristics(2)) then
+			x_max = MeshCaracteristics(2)-1e-12
+		end if
+		if (y_min < MeshCaracteristics(3)) then
+			y_min = MeshCaracteristics(3)+1e-12
+		end if
+		if (y_max > MeshCaracteristics(4)) then
+			y_max = MeshCaracteristics(4)-1e-12
+		end if
+		
+		GetBox(1) = floor((y_min-MeshCaracteristics(3))/delta)+1
+		GetBox(2) = floor((y_max-MeshCaracteristics(3))/delta)+2
+		GetBox(3) = floor((x_min-MeshCaracteristics(1))/delta)+1
+		GetBox(4) = floor((x_max-MeshCaracteristics(1))/delta)+2
+		
+	end function GetBox
+	
 end Module ModuleFunction

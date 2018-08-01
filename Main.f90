@@ -145,7 +145,7 @@ TimeStep = 1
 call WriteParticle(TimeStep,Particle)
 
 
-call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
 
 
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
@@ -155,7 +155,7 @@ do i = 1,Nt
 	call cpu_time(start)
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 	!call WriteParticle(TimeStep,Particle)
-	call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
 	StreamFunction = StreamFunction*Volume
 	call der2_x(Uy, StreamFunction, vtkMask, MeshCaracteristics) 
 	Uy = -Uy !Uy = -dpsi/dx
