@@ -20,11 +20,16 @@ integer :: Nparticle, Nparticle_available
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
 
+INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
+REAL :: elapsed_time  ! real time in seconds
+
 real, allocatable :: RANS_data(:,:), X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
 real, allocatable :: StreamFunction(:,:),Lambda(:,:),Ux(:,:), Uy(:,:), dUy_x(:,:), dUx_y(:,:), Lsum_X(:,:), Lsum_Y(:,:)
 real, allocatable :: Particle(:,:), ParticleSeeder(:,:), NumberPart(:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
 real, dimension(5) :: MeshCaracteristics
+
+integer :: Parallel_computing
 
 character*10 string, format
 
@@ -32,6 +37,8 @@ data format /'(F10.2)'/
 
 ! call init_random_seed()
 call srand(seed)
+
+call omp_set_num_threads(8) ! set the number of threads to 8
 
 ! Mesh caracteristics
 delta = 2.e-4;
@@ -49,9 +56,13 @@ MeshCaracteristics(5) = delta
 nx = (x_max-x_min)/delta+1
 ny = (y_max-y_min)/delta+1
 
+! Enable parallel computing
+write(*,*) 'Using parallel computation?'
+read (*,*) Parallel_computing
+
 ! Particle number
 write(*,*) 'Enter the particle number'
-read(*,*) Nparticle
+read (*,*) Nparticle
 Volume = sqrt((x_max-x_min)*(y_max-y_min)/Nparticle)
 Lambda_min = 0
 
@@ -59,7 +70,7 @@ Lambda_min = 0
 write(*,*) 'Enter time step (s)'
 read (*,*) dt
 write(*,*) 'Enter final time (s)'
-read(*,*) T
+read (*,*) T
 
 if (dt>T) then
 	stop " : Enter final time greater than time step"
@@ -145,17 +156,18 @@ TimeStep = 1
 call WriteParticle(TimeStep,Particle)
 
 
-call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
 
 
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
 
 ! Moving particle, calculating the stream function for each step
 do i = 1,Nt
-	call cpu_time(start)
+	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
+	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 	!call WriteParticle(TimeStep,Particle)
-	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
 	StreamFunction = StreamFunction*Volume
 	call der2_x(Uy, StreamFunction, vtkMask, MeshCaracteristics) 
 	Uy = -Uy !Uy = -dpsi/dx
@@ -175,21 +187,29 @@ do i = 1,Nt
 	call WriteData(TimeStep,Uy,'Vel_Y')
 	call WriteParticle(TimeStep,Particle)
 
-
-	call cpu_time(finish)
-
-
+	CALL SYSTEM_CLOCK(COUNT=nb_ticks_final)
 
 	if (i == 1) then
-		total_time = Nt*(finish-start)
-		print *, 'ESTIMATION TIME NEEDED: '//hourstr(Total_time-(finish-start))
+		nb_ticks_t0 = nb_ticks_initial
+		nb_ticks = nb_ticks_final - nb_ticks_initial
+		elapsed_time = REAL(nb_ticks) / nb_ticks_sec
+		total_time = Nt*(elapsed_time)
+		print *, 'ESTIMATION TIME NEEDED: '//hourstr(Total_time-(elapsed_time))
 	end if
+	
 	print *, 'Done step number '//trim(str(TimeStep))//' over '//trim(str(Nt))
-	if (Total_time-finish>0) then
-		print *, 'Time until end: '//hourstr(Total_time-finish)
+	
+	nb_ticks = nb_ticks_final - nb_ticks_t0
+    elapsed_time = REAL(nb_ticks) / nb_ticks_sec
+	
+	if (total_time-elapsed_time>0) then
+		print *, 'Time until end: '//hourstr(Total_time-elapsed_time)
+		
 	else
 		print *, 'Time until end: '//hourstr(0.)
+		
 	end if
+	
 	TimeStep = TimeStep+1
 end do
 

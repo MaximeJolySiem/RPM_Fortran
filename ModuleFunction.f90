@@ -227,9 +227,12 @@ module ModuleFunction
 
 	end subroutine Calc_Fluctuation
 
+	
+	
+	
 
 	
-	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
 
 		implicit none
 
@@ -240,6 +243,8 @@ module ModuleFunction
 		real, dimension(5) :: MeshCaracteristics
 		real, dimension(2) :: coord
 		integer, dimension(4) :: Box
+		
+		integer :: Parallel_computing
 
 		delta = MeshCaracteristics(5)
 		nx = size(TKE(1,:))
@@ -247,12 +252,13 @@ module ModuleFunction
 		allocate (temp(ny,nx))
 		
 		N_particle = size(Particle(:,1))
-
-		do k = 1, N_particle
 		
+		if (Parallel_computing == 1) then
+			!$OMP PARALLEL DO
+			do k = 1, N_particle
+			
 			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
-			
 			do i = Box(1), Box(2)
 				do j = Box(3), Box(4)
 					if (vtkMask(i,j) == 1) then
@@ -270,7 +276,34 @@ module ModuleFunction
 					end if
 				end do
 			end do
-		end do
+			end do
+			!$OMP END PARALLEL DO
+		else
+			do k = 1, N_particle
+			
+			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
+			do i = Box(1), Box(2)
+				do j = Box(3), Box(4)
+					if (vtkMask(i,j) == 1) then
+					
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+					
+						coord(1) = x_grid-Particle(k,2)
+						coord(2) = y_grid-Particle(k,3)
+					
+						TKE_grid = TKE(i,j)
+					
+						temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
+					
+					end if
+				end do
+			end do
+			end do		
+		
+		
+		end if
 		
 		StreamFunction = temp
 		
