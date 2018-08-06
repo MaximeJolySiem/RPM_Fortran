@@ -5,17 +5,21 @@ Created on Wed Aug  1 18:05:54 2018
 
 @author: maxime
 """
+###############FOR WINDOWS################
+# from Tkinter import *
+# import tkFileDialog as filedialog
 
-from Tkinter import *
-import tkFileDialog as filedialog
+###############FOR OSX################
+from tkinter import *
+from tkinter import filedialog
 
-vtkFilename = ""
-meshFilename = ""
+vtkFilename = "Empty"
+meshFilename = "Empty"
 x_min = 0
 x_max = 0
 y_min = 0
 y_max = 0
-Delta = 0
+Delta = float(0)
 
 def get_entry_fields():
    
@@ -83,7 +87,7 @@ def get_entry_fields():
    text_file.write("meanfile=preCalc_valeoCD.dat" + "\n")
    text_file.write("progress_treshold=1" + "\n")
    text_file.write("viz_interval=" + Acoustic_Time_Step.get() + "\n")
-   text_file.write("output_particles=1" + "\n")
+   text_file.write("output_particles=" + str(Part_write.get()) + "\n")
    text_file.write("particle_file=pF" + "\n")
    text_file.write("turbulence_file=pseudo" + "\n")
    text_file.write("viz_meanflow=1" + "\n")
@@ -102,8 +106,8 @@ def get_entry_fields():
    text_file.write("amplitudeScalingParticleOrGrid=" + Scaling_type.get() + "\n")
    text_file.write("convectionOnly=0" + "\n")
    text_file.write("Rconst=" + Radius_consideration.get() + "\n")
-   text_file.write("vorticity=1" + "\n")
-   text_file.write("velocity=1" + "\n")
+   text_file.write("vorticity=" + str(Vor_write.get()) + "\n")
+   text_file.write("velocity=" + str(Vel_write.get()) + "\n")
    text_file.write("filter=" + Filter_type.get() + "\n")
    if float(Particle_Number.get()) > 0:
       text_file.write("partVol=" + str(((x_max-x_min)*(y_max-y_min)/float(Particle_Number.get()))**(.5)) + "\n")
@@ -115,24 +119,25 @@ def get_entry_fields():
    text_file.write("y_minthreshold=" + str(y_min) + "\n")
    text_file.write("y_threshold=" + str(y_max) + "\n")
    text_file.write("min_lambda_particle=" + Lambda_limiter.get() + "\n")
+   text_file.write("Calcul_Finite_Difference=" + str(FD_enable.get()) + "\n")
     
    text_file.write("\n") 
    text_file.write("[source_calc]" + "\n")
    text_file.write("calc_Lu=1" + "\n")
    text_file.write("calc_Lom=1" + "\n")
-   text_file.write("calc_L2=1" + "\n")
+   text_file.write("calc_L2=0" + "\n")
    text_file.write("calc_Sum=1" + "\n")
     
    text_file.write("\n") 
    text_file.write("[window]" + "\n")
-   text_file.write("Lx1=0.05" + "\n")
-   text_file.write("Lx2=0.1" + "\n")
-   text_file.write("Ly1=0.04" + "\n")
-   text_file.write("Ly2=0.06" + "\n")
-   text_file.write("x1=-0.15" + "\n")
-   text_file.write("x2=0.45" + "\n")
-   text_file.write("y1=-0.08" + "\n")
-   text_file.write("y2=0.12" + "\n")
+   text_file.write("Lx1=" + Lx_min.get() + "\n")
+   text_file.write("Lx2=" + Lx_max.get() + "\n")
+   text_file.write("Ly1=" + Ly_min.get() + "\n")
+   text_file.write("Ly2=" + Ly_max.get() + "\n")
+   text_file.write("x1=" + str(x_min) + "\n")
+   text_file.write("x2=" + str(x_max) + "\n")
+   text_file.write("y1=" + str(y_min) + "\n")
+   text_file.write("y2=" + str(y_max) + "\n")
     
    text_file.write("\n") 
    text_file.write("[interpolation]" + "\n")
@@ -142,13 +147,72 @@ def get_entry_fields():
     
    text_file.write("\n") 
    text_file.write("[statistics]" + "\n")
-   text_file.write("calc_velmean=0" + "\n")
-   text_file.write("calc_velsqrmean=0" + "\n")
-   text_file.write("calc_velcrossmean=0" + "\n")
+   text_file.write("calc_velmean=" + str(Calc_stat.get()) + "\n")
+   text_file.write("calc_velsqrmean=" + str(Calc_stat.get()) + "\n")
+   text_file.write("calc_velcrossmean=" + str(Calc_stat.get()) + "\n")
    text_file.write("beginComputingStatistics=0" + "\n")
    text_file.write("beginWritingStatistics=0" + "\n")
+   text_file.write("TimeComputingStatistics=" + Stat_dt.get() + "\n")
    
    text_file.close()
+   
+ 
+    
+   
+   
+
+  
+   
+   text_file = open("Save", "w")
+   text_file.write(vtkFilename + "\n")
+   text_file.write(meshFilename + "\n")
+   if Evolving_turbulence.get():
+       text_file.write("LangevinEwert" + "\n")
+   else:
+       text_file.write("frozen" + "\n")
+   text_file.write(str(Seed.get()) + "\n")
+   text_file.write(Particle_Number.get() + "\n")
+   text_file.write(str(x_min) + "\n")
+   text_file.write(str(x_max) + "\n")
+   text_file.write(str(y_min) + "\n")
+   text_file.write(str(y_max) + "\n")
+   text_file.write(str(Delta) + "\n")
+   text_file.write(RPM_Time_Step.get() + "\n")
+   text_file.write(Final_time.get() + "\n")
+   text_file.write(Acoustic_Time_Step.get() + "\n")
+   text_file.write(str(Part_write.get()) + "\n")
+   text_file.write(Scaling_type.get() + "\n")
+   text_file.write(Radius_consideration.get() + "\n")
+   text_file.write(str(Vor_write.get()) + "\n")
+   text_file.write(str(Vel_write.get()) + "\n")
+   text_file.write(Filter_type.get() + "\n")
+   if float(Particle_Number.get()) > 0:
+      text_file.write(str(((x_max-x_min)*(y_max-y_min)/float(Particle_Number.get()))**(.5)) + "\n")
+   else :
+      text_file.write("0" + "\n")
+   text_file.write(Lambda_limiter.get() + "\n")
+   text_file.write(str(FD_enable.get()) + "\n")
+   text_file.write(Lx_min.get() + "\n")
+   text_file.write(Lx_max.get() + "\n")
+   text_file.write(Ly_min.get() + "\n")
+   text_file.write(Ly_max.get() + "\n")
+   text_file.write(str(Calc_stat.get()) + "\n")
+   text_file.write(Stat_dt.get() + "\n")
+   text_file.write(str(Lsum_write.get()) + "\n")
+   
+   text_file.close()    
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    
    
    
@@ -174,6 +238,7 @@ def openvtkfile():
           global x_max
           global y_min
           global y_max
+          global Delta
           k = 0
           while data[k][0:2] != "DI":
               k+=1
@@ -231,7 +296,6 @@ def openvtkfile():
           Label(Mafenetre, text="Mesh size = " + str(Delta)).grid(row=5, column=0, sticky=W)
    
     
-    
 
 
 
@@ -254,6 +318,21 @@ def openmeshfile():
 
     
    
+    
+    
+try:
+ with open('Save'): 
+     If_save = 1
+     pass
+except IOError:
+    If_save = 0
+    
+
+
+if(If_save==1):
+    file = open('Save', "r") 
+    data_saved = file.readlines() 
+
    
 # Création de la fenêtre principale (main window)
 Mafenetre = Tk()
@@ -268,14 +347,33 @@ ButtonVtk = Button(Mafenetre, text="Directory", command=openvtkfile).grid(row=1,
 Path_vtk = Entry(Mafenetre)
 Path_vtk.config(width=20)
 Path_vtk.grid(row=2,column=0, sticky=W)
-Path_vtk.insert(0,"Empty")
+if(If_save == 1):
+    Path_vtk.insert(0,data_saved[0][0:len(data_saved[0])-1])
+    vtkFilename = data_saved[0][0:len(data_saved[0])-1]
+    x_min = float(data_saved[5][0:len(data_saved[5])-1])
+    x_max = float(data_saved[6][0:len(data_saved[6])-1])
+    y_min = float(data_saved[7][0:len(data_saved[7])-1])
+    y_max = float(data_saved[8][0:len(data_saved[8])-1])
+    Delta = float(data_saved[9][0:len(data_saved[9])-1])
+    Label(Mafenetre, text="x_min = " + str(x_min)).grid(row=3, column=0, sticky=W)
+    Label(Mafenetre, text="y_min = " + str(y_min)).grid(row=4, column=0, sticky=W)
+    Label(Mafenetre, text="x_max = " + str(x_max)).grid(row=3, column=0, sticky=W, padx = 100)
+    Label(Mafenetre, text="y_max = " + str(y_max)).grid(row=4, column=0, sticky=W, padx = 100)
+    Label(Mafenetre, text="Mesh size = " + str(Delta)).grid(row=5, column=0, sticky=W)
+    
+else:
+    Path_vtk.insert(0,"Empty")
 
 Label(Mafenetre, text="Open mesh file : ").grid(row=6, column=0, sticky=W)
 ButtonMesh = Button(Mafenetre, text="Directory", command=openmeshfile).grid(row=6,column=0, padx=100, sticky=W)
 Path_mesh = Entry(Mafenetre)
 Path_mesh.config(width=20)
 Path_mesh.grid(row=7,column=0, sticky=W)
-Path_mesh.insert(0,"Empty")
+if(If_save == 1):
+    Path_mesh.insert(0,data_saved[1][0:len(data_saved[1])-1])
+    meshFilename = data_saved[1][0:len(data_saved[1])-1]
+else:
+    Path_mesh.insert(0,"Empty")
 
 
 
@@ -286,16 +384,29 @@ Label(Mafenetre, text="Particle parameters", font='Helvetica 18 bold').grid(row=
 
 Seed = IntVar()
 Checkbutton(Mafenetre, text="Constant seed", variable=Seed).grid(row=1, column = 1, sticky=W)
+if(If_save == 1):
+    Seed.set(int(data_saved[3][0:len(data_saved[3])-1]))
+else:    
+    Seed.set(0)
+
+
 Label(Mafenetre, text="Particle number : ").grid(row=2, column=1, sticky=W)
 Particle_Number = Entry(Mafenetre)
 Particle_Number.config(width=7)
 Particle_Number.grid(row=2, column=1, sticky=W, padx=144)
-Particle_Number.insert(0,"0")
+if(If_save == 1):
+    Particle_Number.insert(0,data_saved[4][0:len(data_saved[4])-1])
+else:    
+    Particle_Number.insert(0,"0")
+
 Label(Mafenetre, text="Lenght scale limiter : ").grid(row=3, column=1, sticky=W)
 Lambda_limiter = Entry(Mafenetre)
 Lambda_limiter.config(width=7)
 Lambda_limiter.grid(row=3, column=1, sticky=W, padx=144)
-Lambda_limiter.insert(0,"0")
+if(If_save == 1):
+    Lambda_limiter.insert(0,data_saved[20][0:len(data_saved[20])-1])
+else:
+    Lambda_limiter.insert(0,"0")
 
 
 
@@ -308,21 +419,36 @@ Label(Mafenetre, text="Time parameters", font='Helvetica 18 bold').grid(row=0, c
 
 Evolving_turbulence = IntVar()
 Checkbutton(Mafenetre, text="Evolving turbulence", variable=Evolving_turbulence).grid(row=1, column = 2, sticky=W)
+if(If_save == 1):
+    if(data_saved[2][0:len(data_saved[2])-1] == "LangevinEwert"):
+        Evolving_turbulence.set(1)
+
 Label(Mafenetre, text="RPM time step : ").grid(row=2, column=2, sticky=W)
 RPM_Time_Step = Entry(Mafenetre)
 RPM_Time_Step.config(width=5)
 RPM_Time_Step.grid(row=2, column=2, sticky=W,padx=137)
-RPM_Time_Step.insert(0,"0")
+if(If_save == 1):
+    RPM_Time_Step.insert(0,data_saved[10][0:len(data_saved[10])-1])
+else:
+    RPM_Time_Step.insert(0,"0")
+
 Label(Mafenetre, text="Acoustic time step : ").grid(row=3, column=2, sticky=W)
 Acoustic_Time_Step = Entry(Mafenetre)
 Acoustic_Time_Step.config(width=5)
 Acoustic_Time_Step.grid(row=3, column=2, sticky=W,padx=137)
-Acoustic_Time_Step.insert(0,"0")
+if(If_save == 1):
+    Acoustic_Time_Step.insert(0,data_saved[12][0:len(data_saved[12])-1])
+else:
+    Acoustic_Time_Step.insert(0,"0")
+
 Label(Mafenetre, text="Final time : ").grid(row=4, column=2, sticky=W)
 Final_time = Entry(Mafenetre)
 Final_time.config(width=5)
 Final_time.grid(row=4, column=2, sticky=W,padx=137)
-Final_time.insert(0,"0")
+if(If_save == 1):
+    Final_time.insert(0,data_saved[11][0:len(data_saved[11])-1])
+else:
+    Final_time.insert(0,"0")
 
 
 
@@ -330,6 +456,49 @@ Final_time.insert(0,"0")
 
 
 Label(Mafenetre, text="Writing parameters", font='Helvetica 18 bold').grid(row=0, column=3, sticky=W)
+
+Part_write = IntVar()
+Checkbutton(Mafenetre, text="Particle", variable=Part_write).grid(row=1, column = 3, sticky=W)
+if(If_save == 1):
+    Part_write.set(int(data_saved[13][0:len(data_saved[13])-1]))
+else:
+    Part_write.set(0)
+
+Vel_write = IntVar()
+Checkbutton(Mafenetre, text="Velocity", variable=Vel_write).grid(row=2, column = 3, sticky=W)
+if(If_save == 1):
+    Vel_write.set(int(data_saved[17][0:len(data_saved[17])-1]))
+else:
+    Vel_write.set(0)
+
+Vor_write = IntVar()
+Checkbutton(Mafenetre, text="Vorticity", variable=Vor_write).grid(row=3, column = 3, sticky=W)
+if(If_save == 1):
+    Vor_write.set(int(data_saved[16][0:len(data_saved[16])-1]))
+else:
+    Vor_write.set(0)
+
+Lom_write = IntVar()
+Checkbutton(Mafenetre, text="Lom", variable=Lom_write).grid(row=4, column = 3, sticky=W)
+if(If_save == 1):
+    Lom_write.set(0)
+else:
+    Lom_write.set(0)
+
+Lu_write = IntVar()
+Checkbutton(Mafenetre, text="Lu", variable=Lu_write).grid(row=5, column = 3, sticky=W)
+if(If_save == 1):
+    Lu_write.set(0)
+else:
+    Lu_write.set(0)
+
+Lsum_write = IntVar()
+Checkbutton(Mafenetre, text="Lsum", variable=Lsum_write).grid(row=6, column = 3, sticky=W)
+if(If_save == 1):
+    Lsum_write.set(int(data_saved[28][0:len(data_saved[28])-1]))
+else:
+    Lsum_write.set(0)
+
 
 
 
@@ -354,27 +523,83 @@ Filter_type = StringVar()
 Radiobutton(Mafenetre, text="Gaussian", variable=Filter_type, value="Gaussian").grid(row=Line_second_part+2, column = 0, sticky=W)
 Radiobutton(Mafenetre, text="Liepmann", variable=Filter_type, value="Liepmann").grid(row=Line_second_part+3, column = 0, sticky=W)
 Radiobutton(Mafenetre, text="VonKarman", variable=Filter_type, value="VonKarman").grid(row=Line_second_part+4, column = 0, sticky=W)
-Filter_type.set("Gaussian")
+if(If_save == 1):
+    Filter_type.set(data_saved[18][0:len(data_saved[18])-1])
+else:
+    Filter_type.set("Gaussian")
 
 Label(Mafenetre, text="Scaling type : ").grid(row=Line_second_part+5, column=0, sticky=W)
 Scaling_type = StringVar()
 Radiobutton(Mafenetre, text="Particle", variable=Scaling_type, value="particle").grid(row=Line_second_part+6, column = 0, sticky=W)
 Radiobutton(Mafenetre, text="Grid-Particle", variable=Scaling_type, value="kGrid_lambdaParticle").grid(row=Line_second_part+7, column = 0, sticky=W)
 Radiobutton(Mafenetre, text="Grid", variable=Scaling_type, value="grid").grid(row=Line_second_part+8, column = 0, sticky=W)
-Scaling_type.set("particle")
+if(If_save == 1):
+    Scaling_type.set(data_saved[14][0:len(data_saved[14])-1])
+else:
+    Scaling_type.set("particle")
 
 Label(Mafenetre, text="Radius of consideration : ").grid(row=Line_second_part+9, column=0, sticky=W)
 Radius_consideration = Entry(Mafenetre)
 Radius_consideration.config(width=2)
 Radius_consideration.grid(row=Line_second_part+9, column=0, padx = 165)
-Radius_consideration.insert(0,"0")
+if(If_save == 1):
+    Radius_consideration.insert(0,data_saved[15][0:len(data_saved[15])-1])
+else:
+    Radius_consideration.insert(0,"0")
+
+FD_enable = IntVar()
+Checkbutton(Mafenetre, text="Enable Finite Difference", variable=FD_enable).grid(row=Line_second_part+10, column = 0, sticky=W)
+if(If_save == 1):
+    FD_enable.set(int(data_saved[21][0:len(data_saved[21])-1]))
+
+
+
+
+
+
+
+
 
 
 
 
 Label(Mafenetre, text="Windowing parameters", font='Helvetica 18 bold').grid(row=Line_second_part, column=1, sticky=W)
 
+Label(Mafenetre, text="Lx_min : ").grid(row=Line_second_part+1, column=1, sticky=W)
+Lx_min = Entry(Mafenetre)
+Lx_min.config(width=5)
+Lx_min.grid(row=Line_second_part+1, column=1, sticky=W,padx=70)
+if(If_save == 1):
+    Lx_min.insert(0,data_saved[22][0:len(data_saved[22])-1])
+else:
+    Lx_min.insert(0,"0")
 
+Label(Mafenetre, text="Lx_max : ").grid(row=Line_second_part+2, column=1, sticky=W)
+Lx_max = Entry(Mafenetre)
+Lx_max.config(width=5)
+Lx_max.grid(row=Line_second_part+2, column=1, sticky=W,padx=70)
+if(If_save == 1):
+    Lx_max.insert(0,data_saved[23][0:len(data_saved[23])-1])
+else:
+    Lx_max.insert(0,"0")
+
+Label(Mafenetre, text="Ly_min : ").grid(row=Line_second_part+3, column=1, sticky=W)
+Ly_min = Entry(Mafenetre)
+Ly_min.config(width=5)
+Ly_min.grid(row=Line_second_part+3, column=1, sticky=W,padx=70)
+if(If_save == 1):
+    Ly_min.insert(0,data_saved[24][0:len(data_saved[24])-1])
+else:
+    Ly_min.insert(0,"0")
+
+Label(Mafenetre, text="Ly_max : ").grid(row=Line_second_part+4, column=1, sticky=W)
+Ly_max = Entry(Mafenetre)
+Ly_max.config(width=5)
+Ly_max.grid(row=Line_second_part+4, column=1, sticky=W,padx=70)
+if(If_save == 1):
+    Ly_max.insert(0,data_saved[25][0:len(data_saved[25])-1])
+else:
+    Ly_max.insert(0,"0")
 
 
 
@@ -382,7 +607,19 @@ Label(Mafenetre, text="Windowing parameters", font='Helvetica 18 bold').grid(row
 
 Label(Mafenetre, text="Statistics parameters", font='Helvetica 18 bold').grid(row=Line_second_part, column=2, sticky=W)
 
+Calc_stat = IntVar()
+Checkbutton(Mafenetre, text="Enable statistics", variable=Calc_stat).grid(row=Line_second_part+1, column = 2, sticky=W)
+if(If_save == 1):
+    Calc_stat.set(int(data_saved[26][0:len(data_saved[26])-1]))
 
+Label(Mafenetre, text="Statistic time step : ").grid(row=Line_second_part+2, column=2, sticky=W)
+Stat_dt = Entry(Mafenetre)
+Stat_dt.config(width=5)
+Stat_dt.grid(row=Line_second_part+2, column=2, sticky=W,padx=135)
+if(If_save == 1):
+    Stat_dt.insert(0,data_saved[27][0:len(data_saved[27])-1])
+else:
+    Stat_dt.insert(0,"0")    
 
 
 
