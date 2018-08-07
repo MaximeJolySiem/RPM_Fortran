@@ -67,6 +67,32 @@ module ModuleRead
 	
 	
 	
+	function GetStringVtkValue()
+
+		character*200 :: string
+		integer :: line_no, io, nlines, len_word
+		character(len=:), allocatable :: GetStringVtkValue
+
+		len_word = len("cfddatafile")
+
+		open (18, file='SNGM_config')
+
+		do while(.true.)
+			read(18,'(a)',end=10) string
+			if(string.eq."") then 
+				string = " "
+			end if
+
+			if(string(1:len_word) == "cfddatafile") then
+				allocate(character(len(trim(string(len_word+2:200)))) :: GetStringVtkValue)
+				GetStringVtkValue = trim(string(len_word+2:200))
+				exit
+			end if
+		end do
+		10  continue
+
+
+	end function GetStringVtkValue	
 	
 	
 	
@@ -74,26 +100,24 @@ module ModuleRead
 	
 	
 	
-	
-	function GetVtkField(Word_to_search)
+	function GetVtkField(Word_to_search,File_path)
 
 		integer :: len_word, k_init, k_end, Number_line, Point_number, ii, Number_cursor
 		real :: temp
 		real, allocatable :: GetVtkField(:)
 		character*200 :: string
-		character(len=*) :: Word_to_search
+		character(len=*) :: Word_to_search, File_path
 		character(len=:), allocatable :: Temp_word
 
 		len_word = len(Word_to_search)
 
-		open (20, file='C:/Users/obha7h/Desktop/Fortran/Python_GUI_Interface/cfdData.vtk')
+		open (20, file= File_path)
 			do while(.true.)
 				read(20,'(a)',end=11) string
 				if(string.eq."") then 
 					string = " "
 				end if
 				if(string(1:10) == 'POINT_DATA') then
-				print *, string
 					READ(string(12:200),*) Point_number
 					exit
 				end if
@@ -111,7 +135,7 @@ module ModuleRead
 
 		allocate(GetVtkField(Point_number))
 
-		open (20, file='C:/Users/obha7h/Desktop/Fortran/Python_GUI_Interface/cfdData.vtk')
+		open (20, file=File_path)
 
 		do while(.true.)
 

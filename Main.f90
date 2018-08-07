@@ -31,6 +31,8 @@ real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
 
+character(len=:), allocatable :: File_path
+
 integer :: Parallel_computing
 
 character*10 string, format
@@ -41,6 +43,11 @@ data format /'(F10.2)'/
 call srand(seed)
 
 call omp_set_num_threads(8) ! set the number of threads to 8
+
+!VTK Path file
+allocate(character(len(GetStringVtkValue())) :: File_path)
+
+File_path = GetStringVtkValue()
 
 ! Mesh caracteristics
 x_min = GetRealVtkValue("x_min")
@@ -92,12 +99,12 @@ allocate (X_VELOCITY(ny,nx),Y_VELOCITY(ny,nx),TKE(ny,nx),SDR(ny,nx),Z_VORTICITY(
 
 allocate(X_VELOCITYTemp(nx*ny),Y_VELOCITYTemp(nx*ny),TKETemp(nx*ny),SDRTemp(nx*ny),Z_VORTICITYTemp(nx*ny),vtkMaskTemp(nx*ny))
 
-X_VELOCITYTemp = GetVtkField('X_VELOCITY')
-Y_VELOCITYTemp = GetVtkField('Y_VELOCITY')
-Z_VORTICITYTemp = GetVtkField('Z_VORTICITY')
-TKETemp = GetVtkField('TKE')
-SDRTemp = GetVtkField('SDR')
-vtkMaskTemp = GetVtkField('vtkValidPointMask')
+X_VELOCITYTemp = GetVtkField('X_VELOCITY',File_path)
+Y_VELOCITYTemp = GetVtkField('Y_VELOCITY',File_path)
+Z_VORTICITYTemp = GetVtkField('Z_VORTICITY',File_path)
+TKETemp = GetVtkField('TKE',File_path)
+SDRTemp = GetVtkField('SDR',File_path)
+vtkMaskTemp = GetVtkField('vtkValidPointMask',File_path)
 
 
 do i = 1,ny
