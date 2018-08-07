@@ -20,7 +20,6 @@ integer :: nx,ny,line_no,i,j
 integer :: Nparticle, Nparticle_available, Particle_available_counter
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
-integer :: i_debug
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
@@ -29,6 +28,7 @@ real, allocatable :: RANS_data(:,:), X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:),
 real, allocatable :: StreamFunction(:,:),Lambda(:,:),Ux(:,:), Uy(:,:), dUy_x(:,:), dUx_y(:,:), Lsum_X(:,:), Lsum_Y(:,:)
 real, allocatable :: Particle(:,:), ParticleSeeder(:,:), NumberPart(:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
+real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
 
 integer :: Parallel_computing
@@ -54,8 +54,6 @@ MeshCaracteristics(2) = x_max
 MeshCaracteristics(3) = y_min
 MeshCaracteristics(4) = y_max
 MeshCaracteristics(5) = delta
-
-i_debug = 0
 
 nx = (x_max-x_min)/delta+1
 ny = (y_max-y_min)/delta+1
@@ -92,14 +90,24 @@ end do
 
 allocate (X_VELOCITY(ny,nx),Y_VELOCITY(ny,nx),TKE(ny,nx),SDR(ny,nx),Z_VORTICITY(ny,nx),vtkMask(ny,nx),Lambda(ny,nx))
 
+allocate(X_VELOCITYTemp(nx*ny),Y_VELOCITYTemp(nx*ny),TKETemp(nx*ny),SDRTemp(nx*ny),Z_VORTICITYTemp(nx*ny),vtkMaskTemp(nx*ny))
+
+X_VELOCITYTemp = GetVtkField('X_VELOCITY')
+Y_VELOCITYTemp = GetVtkField('Y_VELOCITY')
+Z_VORTICITYTemp = GetVtkField('Z_VORTICITY')
+TKETemp = GetVtkField('TKE')
+SDRTemp = GetVtkField('SDR')
+vtkMaskTemp = GetVtkField('vtkValidPointMask')
+
+
 do i = 1,ny
 	do j = 1,nx
-		X_VELOCITY(i,j) = RANS_data(j+(i-1)*nx,1)
-		Y_VELOCITY(i,j) = RANS_data(j+(i-1)*nx,2)
-		TKE(i,j) = RANS_data(j+(i-1)*nx,3)
-		SDR(i,j) = RANS_data(j+(i-1)*nx,4)
-		Z_VORTICITY(i,j) = RANS_data(j+(i-1)*nx,5)
-		vtkMask(i,j) = RANS_data(j+(i-1)*nx,6)
+		X_VELOCITY(i,j) = X_VELOCITYTemp(j+(i-1)*nx)
+		Y_VELOCITY(i,j) = Y_VELOCITYTemp(j+(i-1)*nx)
+		TKE(i,j) = TKETemp(j+(i-1)*nx)
+		SDR(i,j) = SDRTemp(j+(i-1)*nx)
+		Z_VORTICITY(i,j) = Z_VORTICITYTemp(j+(i-1)*nx)
+		vtkMask(i,j) = vtkMaskTemp(j+(i-1)*nx)
 		if (6*sqrt(TKE(i,j))/SDR(i,j) >= Lambda_min) then
 			Lambda(i,j) = 6*sqrt(TKE(i,j))/SDR(i,j)
 		else
@@ -107,7 +115,8 @@ do i = 1,ny
 		end if
 	end do
 end do
-deallocate (SDR)
+
+deallocate (X_VELOCITYTemp,Y_VELOCITYTemp,Z_VORTICITYTemp,TKETemp,SDRTemp,vtkMaskTemp,SDR)
 
 ! Seeding
 PartSeeder = GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
