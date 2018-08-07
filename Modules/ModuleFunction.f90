@@ -256,7 +256,6 @@ module ModuleFunction
 		if (Parallel_computing == 1) then
 			!$OMP PARALLEL DO
 			do k = 1, N_particle
-			
 			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
 			do i = Box(1), Box(2)
@@ -278,6 +277,8 @@ module ModuleFunction
 			end do
 			end do
 			!$OMP END PARALLEL DO
+			
+			
 		else
 			do k = 1, N_particle
 			
