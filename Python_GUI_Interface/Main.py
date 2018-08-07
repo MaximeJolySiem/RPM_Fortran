@@ -6,12 +6,12 @@ Created on Wed Aug  1 18:05:54 2018
 @author: maxime
 """
 ###############FOR WINDOWS################
-# from Tkinter import *
-# import tkFileDialog as filedialog
+from Tkinter import *
+import tkFileDialog as filedialog
 
 ###############FOR OSX################
-from tkinter import *
-from tkinter import filedialog
+#from tkinter import *
+#from tkinter import filedialog
 
 vtkFilename = "Empty"
 meshFilename = "Empty"
@@ -23,7 +23,7 @@ Delta = float(0)
 
 def get_entry_fields():
    
-   text_file = open("SNGM_config", "w")
+   text_file = open("../SNGM_config", "w")
    text_file.write("[meanflow]" + "\n")
    text_file.write("cfddatafile=" + vtkFilename + "\n")
    text_file.write("cfdmeshfile=" + meshFilename +  "\n")
@@ -58,6 +58,7 @@ def get_entry_fields():
    text_file.write("x_max=" + str(x_max) + "\n")
    text_file.write("y_min=" + str(y_min) + "\n")
    text_file.write("y_max=" + str(y_max) + "\n")
+   text_file.write("Delta=" + str(Delta) + "\n")
    text_file.write("y_min2=" + str(y_min) + "\n")
    text_file.write("y_max2=" + str(y_max) + "\n")
    text_file.write("z_min=0" + "\n")
@@ -120,6 +121,7 @@ def get_entry_fields():
    text_file.write("y_threshold=" + str(y_max) + "\n")
    text_file.write("min_lambda_particle=" + Lambda_limiter.get() + "\n")
    text_file.write("Calcul_Finite_Difference=" + str(FD_enable.get()) + "\n")
+   text_file.write("Parallel_computing=" + str(OMP_enable.get()) + "\n")
     
    text_file.write("\n") 
    text_file.write("[source_calc]" + "\n")
@@ -199,6 +201,7 @@ def get_entry_fields():
    text_file.write(str(Calc_stat.get()) + "\n")
    text_file.write(Stat_dt.get() + "\n")
    text_file.write(str(Lsum_write.get()) + "\n")
+   text_file.write(str(OMP_enable.get()) + "\n")
    
    text_file.close()    
    
@@ -552,8 +555,10 @@ Checkbutton(Mafenetre, text="Enable Finite Difference", variable=FD_enable).grid
 if(If_save == 1):
     FD_enable.set(int(data_saved[21][0:len(data_saved[21])-1]))
 
-
-
+OMP_enable = IntVar()
+Checkbutton(Mafenetre, text="Enable Parallel computing", variable=OMP_enable).grid(row=Line_second_part+11, column = 0, sticky=W)
+if(If_save == 1):
+    OMP_enable.set(int(data_saved[29][0:len(data_saved[29])-1]))
 
 
 

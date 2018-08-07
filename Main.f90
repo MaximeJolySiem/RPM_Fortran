@@ -11,15 +11,16 @@ implicit none
 integer, parameter :: seed = 86456
 
 real :: x_min, x_max, y_min, y_max, delta, x
-real :: total_time,test,Particle_available_counter, Lambda_min
+real :: total_time,test, Lambda_min
 real :: testprob
 real :: start, finish
 real :: dt, T, Volume
 
 integer :: nx,ny,line_no,i,j
-integer :: Nparticle, Nparticle_available
+integer :: Nparticle, Nparticle_available, Particle_available_counter
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
+integer :: i_debug
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
@@ -42,11 +43,11 @@ call srand(seed)
 call omp_set_num_threads(8) ! set the number of threads to 8
 
 ! Mesh caracteristics
-delta = 2.e-4;
-x_min = 0.32;
-x_max = 0.48;
-y_min = -0.02;
-y_max = 0.02;
+x_min = GetRealVtkValue("x_min")
+x_max = GetRealVtkValue("x_max")
+y_min = GetRealVtkValue("y_min")
+y_max = GetRealVtkValue("y_max")
+delta = GetRealVtkValue("Delta")
 
 MeshCaracteristics(1) = x_min
 MeshCaracteristics(2) = x_max
@@ -54,24 +55,22 @@ MeshCaracteristics(3) = y_min
 MeshCaracteristics(4) = y_max
 MeshCaracteristics(5) = delta
 
+i_debug = 0
+
 nx = (x_max-x_min)/delta+1
 ny = (y_max-y_min)/delta+1
 
 ! Enable parallel computing
-write(*,*) 'Using parallel computation?'
-read (*,*) Parallel_computing
+Parallel_computing = GetIntVtkValue("Parallel_computing")
 
 ! Particle number
-write(*,*) 'Enter the particle number'
-read (*,*) Nparticle
+Nparticle = GetIntVtkValue("Nparticles")
 Volume = sqrt((x_max-x_min)*(y_max-y_min)/Nparticle)
 Lambda_min = 0
 
 ! Time caracteristics
-write(*,*) 'Enter time step (s)'
-read (*,*) dt
-write(*,*) 'Enter final time (s)'
-read (*,*) T
+dt = GetRealVtkValue("viz_interval")
+T = GetRealVtkValue("end_time")
 
 if (dt>T) then
 	stop " : Enter final time greater than time step"
@@ -113,7 +112,6 @@ deallocate (SDR)
 ! Seeding
 PartSeeder = GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
 
-
 allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
@@ -129,6 +127,9 @@ end do
 
 ! Removing particle in airfoil
 allocate (NumberPart(Nparticle))
+
+Particle_available_counter = 0
+
 do i = 1,Nparticle
 	if (Get_value(ParticleSeeder(i,2),ParticleSeeder(i,3),MeshCaracteristics,vtkMask) == 1) then
 		NumberPart(i) = 1
@@ -136,9 +137,7 @@ do i = 1,Nparticle
 	end if
 end do
 
-Nparticle_available = floor(Particle_available_counter)
-
-allocate (Particle(Nparticle_available,4))
+allocate (Particle(Particle_available_counter,4))
 
 k = 1
 do i = 1,Nparticle
@@ -150,6 +149,7 @@ do i = 1,Nparticle
 		k = k+1
 	end if
 end do
+
 deallocate (NumberPart,ParticleSeeder)
 
 ! First step
