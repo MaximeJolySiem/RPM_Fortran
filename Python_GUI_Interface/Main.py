@@ -156,6 +156,13 @@ def get_entry_fields():
    text_file.write("beginComputingStatistics=0" + "\n")
    text_file.write("beginWritingStatistics=0" + "\n")
    text_file.write("TimeComputingStatistics=" + Stat_dt.get() + "\n")
+
+   text_file.write("\n") 
+   text_file.write("[writing]" + "\n")
+   text_file.write("write_Particle=" + str(Part_write.get()) + "\n")
+   text_file.write("write_Vel=" + str(Vel_write.get()) + "\n")
+   text_file.write("write_Vor=" + str(Vor_write.get()) + "\n")
+   text_file.write("write_Lsum=" + str(Lsum_write.get()) + "\n")
    
    text_file.close()
    
