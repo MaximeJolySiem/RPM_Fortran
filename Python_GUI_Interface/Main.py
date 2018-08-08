@@ -1,17 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  1 18:05:54 2018
+import sys
 
-@author: maxime
-"""
-###############FOR WINDOWS################
-from Tkinter import *
-import tkFileDialog as filedialog
-
-###############FOR OSX################
-#from tkinter import *
-#from tkinter import filedialog
+if sys.version_info[0] < 3:
+    from Tkinter import *
+    import tkFileDialog as filedialog
+else:
+    from tkinter import *
+    from tkinter import filedialog
 
 vtkFilename = "Empty"
 meshFilename = "Empty"
@@ -34,6 +28,7 @@ def get_entry_fields():
    text_file.write("turb_cl=0.54" + "\n")
    text_file.write("turb_Cmu=0.09" + "\n")
    text_file.write("turb_Lmax=100" + "\n")
+   text_file.write("turb_Lmin=" + Lambda_limiter.get() + "\n")
    
    text_file.write("\n")
    text_file.write("[particleint]" + "\n")
@@ -163,6 +158,7 @@ def get_entry_fields():
    text_file.write("write_Vel=" + str(Vel_write.get()) + "\n")
    text_file.write("write_Vor=" + str(Vor_write.get()) + "\n")
    text_file.write("write_Lsum=" + str(Lsum_write.get()) + "\n")
+   text_file.write("write_binary_format=" + str(bin_write.get()) + "\n")
    
    text_file.close()
    
@@ -210,6 +206,7 @@ def get_entry_fields():
    text_file.write(Stat_dt.get() + "\n")
    text_file.write(str(Lsum_write.get()) + "\n")
    text_file.write(str(OMP_enable.get()) + "\n")
+   text_file.write(str(bin_write.get()) + "\n")
    
    text_file.close()    
    
@@ -337,16 +334,22 @@ def EstimateMemory():
    Nt = int(round(T/dt))
    Nb_variable = 0
    if Vel_write.get() == 1:
-      Nb_variable = Nb_variable+1
+      Nb_variable = Nb_variable+2
    if Vor_write.get() == 1:
       Nb_variable = Nb_variable+1
    if Lsum_write.get() == 1:
-      Nb_variable = Nb_variable+1
+      Nb_variable = Nb_variable+2
    nx = int(round((x_max-x_min+Delta)/Delta))
    ny = int(round((y_max-y_min+Delta)/Delta))
-   Memory_estimation = Nb_variable*nx*ny*16*Nt
+   if (bin_write.get() == 1):
+       Memory_estimation = Nb_variable*nx*ny*12*Nt
+   else:
+       Memory_estimation = Nb_variable*nx*ny*18*Nt
    if Part_write.get() == 1:
-      Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*16*Nt
+      if (bin_write.get() == 1):
+          Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*12*Nt
+      else:
+          Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*18*Nt
       
    Memory_estimation = int(round(Memory_estimation*1e-6))
    Memory_string_var.set(str(Memory_estimation) + ' Mb')
@@ -494,51 +497,61 @@ else:
 
 Label(Mafenetre, text="Writing parameters", font='Helvetica 18 bold').grid(row=0, column=3, sticky=W)
 
+
+bin_write = IntVar()
+Checkbutton(Mafenetre, text="Write in binary format", variable=bin_write).grid(row=1, column = 3, sticky=W)
+if(If_save == 1):
+    bin_write.set(int(data_saved[30][0:len(data_saved[30])-1]))
+else:
+    bin_write.set(0)
+
+
+
 Part_write = IntVar()
-Checkbutton(Mafenetre, text="Particle", variable=Part_write).grid(row=1, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Particle", variable=Part_write).grid(row=2, column = 3, sticky=W)
 if(If_save == 1):
     Part_write.set(int(data_saved[13][0:len(data_saved[13])-1]))
 else:
     Part_write.set(0)
 
 Vel_write = IntVar()
-Checkbutton(Mafenetre, text="Velocity", variable=Vel_write).grid(row=2, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Velocity", variable=Vel_write).grid(row=3, column = 3, sticky=W)
 if(If_save == 1):
     Vel_write.set(int(data_saved[17][0:len(data_saved[17])-1]))
 else:
     Vel_write.set(0)
 
 Vor_write = IntVar()
-Checkbutton(Mafenetre, text="Vorticity", variable=Vor_write).grid(row=3, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Vorticity", variable=Vor_write).grid(row=4, column = 3, sticky=W)
 if(If_save == 1):
     Vor_write.set(int(data_saved[16][0:len(data_saved[16])-1]))
 else:
     Vor_write.set(0)
 
 Lom_write = IntVar()
-Checkbutton(Mafenetre, text="Lom", variable=Lom_write).grid(row=4, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Lom", variable=Lom_write).grid(row=5, column = 3, sticky=W)
 if(If_save == 1):
     Lom_write.set(0)
 else:
     Lom_write.set(0)
 
 Lu_write = IntVar()
-Checkbutton(Mafenetre, text="Lu", variable=Lu_write).grid(row=5, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Lu", variable=Lu_write).grid(row=6, column = 3, sticky=W)
 if(If_save == 1):
     Lu_write.set(0)
 else:
     Lu_write.set(0)
 
 Lsum_write = IntVar()
-Checkbutton(Mafenetre, text="Lsum", variable=Lsum_write).grid(row=6, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Lsum", variable=Lsum_write).grid(row=7, column = 3, sticky=W)
 if(If_save == 1):
     Lsum_write.set(int(data_saved[28][0:len(data_saved[28])-1]))
 else:
     Lsum_write.set(0)
 
-ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=7,column=3, sticky=W)
+ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=8,column=3, sticky=W)
 Memory_string_var = StringVar(value="")
-depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=7,column=3, padx = 120) 
+depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=8,column=3, padx = 130) 
 
 
 
