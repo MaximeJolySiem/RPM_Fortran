@@ -16,7 +16,7 @@ real :: testprob
 real :: start, finish
 real :: dt, T, Volume
 
-integer :: nx,ny,line_no,i,j
+integer :: nx,ny,line_no,i,j,Radius
 integer :: Nparticle, Nparticle_available, Particle_available_counter
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
@@ -39,6 +39,22 @@ integer :: Parallel_computing
 character*10 string, format
 
 data format /'(F10.2)'/
+
+logical :: dir_e
+
+
+
+
+
+
+
+!Verify and create Data folder
+inquire(file='./Data/.', exist=dir_e)
+
+if (.not. dir_e ) then
+  call system('mkdir Data')
+end if
+
 
 ! call init_random_seed()
 call srand(seed)
@@ -79,6 +95,7 @@ write_Lsum = GetIntVtkValue("write_Lsum")
 Nparticle = GetIntVtkValue("Nparticles")
 Volume = sqrt((x_max-x_min)*(y_max-y_min)/Nparticle)
 Lambda_min = 0
+Radius = GetIntVtkValue("Rconst")
 
 ! Time caracteristics
 dt = GetRealVtkValue("viz_interval")
@@ -181,7 +198,7 @@ do i = 1,Nt
 	
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 	!call WriteParticle(TimeStep,Particle)
-	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
+	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius)
 	StreamFunction = StreamFunction*Volume
 	call der2_x(Uy, StreamFunction, vtkMask, MeshCaracteristics) 
 	Uy = -Uy !Uy = -dpsi/dx

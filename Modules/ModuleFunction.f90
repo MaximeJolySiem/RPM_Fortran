@@ -232,12 +232,12 @@ module ModuleFunction
 	
 
 	
-	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
+	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius)
 
 		implicit none
 
 		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part
-		integer :: nx,ny,N_particle,i,j,k
+		integer :: nx,ny,N_particle,i,j,k,Radius
 		real, allocatable :: StreamFunction(:,:), temp(:,:)
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
 		real, dimension(5) :: MeshCaracteristics
@@ -257,7 +257,7 @@ module ModuleFunction
 			!$OMP PARALLEL DO PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
 			do k = 1, N_particle
 				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
+				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
 				do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
 						if (vtkMask(i,j) == 1) then
@@ -283,7 +283,7 @@ module ModuleFunction
 			do k = 1, N_particle
 			
 			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
 				do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
 						if (vtkMask(i,j) == 1) then
@@ -421,21 +421,20 @@ module ModuleFunction
 	
 	
 	
-	function GetBox(x_part,y_part,Lambda_part,MeshCaracteristics)
+	function GetBox(x_part,y_part,Lambda_part,MeshCaracteristics,Radius)
 	
 		real :: x_part, y_part, Lambda_part, x_min, y_min, x_max, y_max
 		real :: delta
-		integer :: j_min, j_max, i_min, i_max
+		integer :: j_min, j_max, i_min, i_max, Radius
 		
 		integer, dimension(4) :: GetBox !GetBox will get [i_min,i_max,j_min,j_max] then indexes of [y_min, y_max, x_min, x_max]
 		real,dimension(5) :: MeshCaracteristics
 		
 		delta = MeshCaracteristics(5)
-		
-		x_min = x_part - 2*Lambda_part
-		x_max = x_part + 2*Lambda_part
-		y_min = y_part - 2*Lambda_part
-		y_max = y_part + 2*Lambda_part
+		x_min = x_part - Radius*Lambda_part
+		x_max = x_part + Radius*Lambda_part
+		y_min = y_part - Radius*Lambda_part
+		y_max = y_part + Radius*Lambda_part
 		
 		
 		if (x_min < MeshCaracteristics(1)) then
