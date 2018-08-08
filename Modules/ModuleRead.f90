@@ -90,6 +90,8 @@ module ModuleRead
 			end if
 		end do
 		10  continue
+		
+		close(18)
 
 
 	end function GetStringVtkValue	

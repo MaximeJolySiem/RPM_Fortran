@@ -20,6 +20,7 @@ x_max = 0
 y_min = 0
 y_max = 0
 Delta = float(0)
+Label_test_for_memory = 0
 
 def get_entry_fields():
    
@@ -211,7 +212,7 @@ def get_entry_fields():
    
    
    
-   
+ 
    
    
    
@@ -320,7 +321,33 @@ def openmeshfile():
 
 
     
-   
+ 
+
+def EstimateMemory():
+   global Label_test_for_memory
+   dt = float(Acoustic_Time_Step.get())
+   T = float(Final_time.get())
+   Nt = int(round(T/dt))
+   Nb_variable = 0
+   if Vel_write.get() == 1:
+      Nb_variable = Nb_variable+1
+   if Vor_write.get() == 1:
+      Nb_variable = Nb_variable+1
+   if Lsum_write.get() == 1:
+      Nb_variable = Nb_variable+1
+   nx = int(round((x_max-x_min+Delta)/Delta))
+   ny = int(round((y_max-y_min+Delta)/Delta))
+   Memory_estimation = Nb_variable*nx*ny*2*Nt
+   if Part_write.get() == 1:
+      Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*2*Nt
+      
+   Memory_estimation = int(round(Memory_estimation*1e-6))
+   Memory_string_var.set(str(Memory_estimation) + ' Mb')
+ 
+ 
+ 
+ 
+ 
     
     
 try:
@@ -502,9 +529,9 @@ if(If_save == 1):
 else:
     Lsum_write.set(0)
 
-
-
-
+ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=7,column=3, sticky=W)
+Memory_string_var = StringVar(value="")
+depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=7,column=3, padx = 120) 
 
 
 

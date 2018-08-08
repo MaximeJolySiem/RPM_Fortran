@@ -42,7 +42,7 @@ data format /'(F10.2)'/
 ! call init_random_seed()
 call srand(seed)
 
-call omp_set_num_threads(8) ! set the number of threads to 8
+call omp_set_num_threads(4) ! set the number of threads to 8
 
 !VTK Path file
 allocate(character(len(GetStringVtkValue())) :: File_path)
@@ -84,16 +84,6 @@ end if
 write(*,*) 'BEGINING COMPUTING'
 
 Nt = T/dt
-
-! Take RANS data in array
-allocate (RANS_data(nx*ny,6))
-
-open (18, file='RANS.csv')
-read(18,*)
-
-do line_no=1,nx*ny
-	read(18,*) RANS_data(line_no,:)
-end do
 
 allocate (X_VELOCITY(ny,nx),Y_VELOCITY(ny,nx),TKE(ny,nx),SDR(ny,nx),Z_VORTICITY(ny,nx),vtkMask(ny,nx),Lambda(ny,nx))
 
@@ -168,12 +158,9 @@ end do
 
 deallocate (NumberPart,ParticleSeeder)
 
+
 ! First step
 TimeStep = 1
-call WriteParticle(TimeStep,Particle)
-
-
-call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
 
 
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
@@ -182,6 +169,9 @@ allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx)
 do i = 1,Nt
 	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
+	
+	
+	
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 	!call WriteParticle(TimeStep,Particle)
 	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing)
@@ -204,6 +194,8 @@ do i = 1,Nt
 	call WriteData(TimeStep,Uy,'Vel_Y')
 	call WriteParticle(TimeStep,Particle)
 
+	
+	
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_final)
 
 	if (i == 1) then
