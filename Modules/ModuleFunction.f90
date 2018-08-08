@@ -305,7 +305,6 @@ module ModuleFunction
 		
 		
 		end if
-		print *, temp(1,1)
 		StreamFunction = temp
 		
 		deallocate (temp)

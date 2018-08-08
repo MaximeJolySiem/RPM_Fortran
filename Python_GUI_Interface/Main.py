@@ -337,9 +337,9 @@ def EstimateMemory():
       Nb_variable = Nb_variable+1
    nx = int(round((x_max-x_min+Delta)/Delta))
    ny = int(round((y_max-y_min+Delta)/Delta))
-   Memory_estimation = Nb_variable*nx*ny*2*Nt
+   Memory_estimation = Nb_variable*nx*ny*16*Nt
    if Part_write.get() == 1:
-      Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*2*Nt
+      Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*16*Nt
       
    Memory_estimation = int(round(Memory_estimation*1e-6))
    Memory_string_var.set(str(Memory_estimation) + ' Mb')
