@@ -20,7 +20,7 @@ integer :: nx,ny,line_no,i,j,Radius
 integer :: Nparticle, Nparticle_available, Particle_available_counter
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
-integer :: write_Particle, write_Vel, write_Vor, write_Lsum
+integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
@@ -90,11 +90,12 @@ write_Particle = GetIntVtkValue("write_Particle")
 write_Vel = GetIntVtkValue("write_Vel")
 write_Vor = GetIntVtkValue("write_Vor")
 write_Lsum = GetIntVtkValue("write_Lsum")
+write_binary_format = GetIntVtkValue("write_binary_format")
 
 ! Particle number
 Nparticle = GetIntVtkValue("Nparticles")
 Volume = sqrt((x_max-x_min)*(y_max-y_min)/Nparticle)
-Lambda_min = 0
+Lambda_min = GetRealVtkValue("turb_Lmin")
 Radius = GetIntVtkValue("Rconst")
 
 ! Time caracteristics
@@ -210,21 +211,38 @@ do i = 1,Nt
 	Lsum_Y = -X_VELOCITY*Vorticity - Ux*Z_VORTICITY
 
 
-	if (write_Particle == 1) then
-		call WriteParticle(TimeStep,Particle)
+	if (write_binary_format == 0) then
+		if (write_Particle == 1) then
+			call WriteParticle(TimeStep,Particle)
+		end if
+		if (write_Vel == 1) then
+			!call WriteData(TimeStep,Ux,'Vel_X')
+			call WriteData(TimeStep,Ux,'Vel_X')
+			call WriteData(TimeStep,Uy,'Vel_Y')
+		end if
+		if (write_Vor == 1) then
+			call WriteData(TimeStep,Vorticity,'Vor_Z')
+		end if
+		if (write_Lsum == 1) then
+			call WriteData(TimeStep,Lsum_X,'Lsum_X')
+			call WriteData(TimeStep,Lsum_Y,'Lsum_Y')
+		end if
+	else
+		if (write_Particle == 1) then
+			call WriteBinParticle(TimeStep,Particle)
+		end if
+		if (write_Vel == 1) then
+			call WriteBinData(TimeStep,Ux,'Vel_X')
+			call WriteBinData(TimeStep,Uy,'Vel_Y')
+		end if
+		if (write_Vor == 1) then
+			call WriteBinData(TimeStep,Vorticity,'Vor_Z')
+		end if
+		if (write_Lsum == 1) then
+			call WriteBinData(TimeStep,Lsum_X,'Lsum_X')
+			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y')
+		end if
 	end if
-	if (write_Vel == 1) then
-		call WriteData(TimeStep,Ux,'Vel_X')
-		call WriteData(TimeStep,Uy,'Vel_Y')
-	end if
-	if (write_Vor == 1) then
-		call WriteData(TimeStep,Vorticity,'Vor_Z')
-	end if
-	if (write_Lsum == 1) then
-		call WriteData(TimeStep,Lsum_X,'Lsum_X')
-		call WriteData(TimeStep,Lsum_Y,'Lsum_Y')
-	end if
-
 	
 
 	
