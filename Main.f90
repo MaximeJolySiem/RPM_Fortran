@@ -21,6 +21,7 @@ integer :: Nparticle, Nparticle_available, Particle_available_counter
 integer :: TimeStep,Nt
 integer :: hour, minute, seconde, k
 integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
+integer :: Get_Number_Thread
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
@@ -59,8 +60,6 @@ end if
 ! call init_random_seed()
 call srand(seed)
 
-call omp_set_num_threads(4) ! set the number of threads to 8
-
 !VTK Path file
 allocate(character(len(GetStringVtkValue())) :: File_path)
 
@@ -84,6 +83,9 @@ ny = (y_max-y_min)/delta+1
 
 ! Enable parallel computing
 Parallel_computing = GetIntVtkValue("Parallel_computing")
+Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
+
+call omp_set_num_threads(Get_Number_Thread) ! set the number of threads to 8
 
 !Writing parameters
 write_Particle = GetIntVtkValue("write_Particle")
@@ -216,7 +218,6 @@ do i = 1,Nt
 			call WriteParticle(TimeStep,Particle)
 		end if
 		if (write_Vel == 1) then
-			!call WriteData(TimeStep,Ux,'Vel_X')
 			call WriteData(TimeStep,Ux,'Vel_X')
 			call WriteData(TimeStep,Uy,'Vel_Y')
 		end if

@@ -275,7 +275,7 @@ module ModuleFunction
 
 		implicit none
 
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2
 		integer :: nx,ny,N_particle,i,j,k,Radius
 		real, allocatable :: StreamFunction(:,:), temp(:,:)
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
@@ -294,7 +294,7 @@ module ModuleFunction
 		N_particle = size(Particle(:,1))
 		
 		if (Parallel_computing == 1) then
-			!$OMP PARALLEL DO PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
+			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
 			do k = 1, N_particle
 				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
@@ -309,7 +309,7 @@ module ModuleFunction
 							coord(2) = y_grid-Particle(k,3)
 						
 							TKE_grid = TKE(i,j)
-						
+							
 							temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
 						
 						end if
@@ -324,7 +324,7 @@ module ModuleFunction
 			
 			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
+			do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
 						if (vtkMask(i,j) == 1) then
 						
@@ -335,7 +335,7 @@ module ModuleFunction
 							coord(2) = y_grid-Particle(k,3)
 						
 							TKE_grid = TKE(i,j)
-						
+							
 							temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
 						
 						end if

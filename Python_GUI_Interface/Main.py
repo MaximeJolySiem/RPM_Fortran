@@ -1,4 +1,5 @@
 import sys
+import multiprocessing
 
 if sys.version_info[0] < 3:
     from Tkinter import *
@@ -15,6 +16,8 @@ y_min = 0
 y_max = 0
 Delta = float(0)
 Label_test_for_memory = 0
+
+Get_Thread_Number = multiprocessing.cpu_count()
 
 def get_entry_fields():
    
@@ -118,6 +121,7 @@ def get_entry_fields():
    text_file.write("min_lambda_particle=" + Lambda_limiter.get() + "\n")
    text_file.write("Calcul_Finite_Difference=" + str(FD_enable.get()) + "\n")
    text_file.write("Parallel_computing=" + str(OMP_enable.get()) + "\n")
+   text_file.write("Parallel_Number_Thread=" + str(Set_Number_Thread.get()) + "\n")
     
    text_file.write("\n") 
    text_file.write("[source_calc]" + "\n")
@@ -374,7 +378,7 @@ if(If_save==1):
     data_saved = file.readlines() 
 
    
-# Création de la fenêtre principale (main window)
+
 Mafenetre = Tk()
 
 
@@ -528,30 +532,16 @@ if(If_save == 1):
 else:
     Vor_write.set(0)
 
-Lom_write = IntVar()
-Checkbutton(Mafenetre, text="Lom", variable=Lom_write).grid(row=5, column = 3, sticky=W)
-if(If_save == 1):
-    Lom_write.set(0)
-else:
-    Lom_write.set(0)
-
-Lu_write = IntVar()
-Checkbutton(Mafenetre, text="Lu", variable=Lu_write).grid(row=6, column = 3, sticky=W)
-if(If_save == 1):
-    Lu_write.set(0)
-else:
-    Lu_write.set(0)
-
 Lsum_write = IntVar()
-Checkbutton(Mafenetre, text="Lsum", variable=Lsum_write).grid(row=7, column = 3, sticky=W)
+Checkbutton(Mafenetre, text="Lamb", variable=Lsum_write).grid(row=5, column = 3, sticky=W)
 if(If_save == 1):
     Lsum_write.set(int(data_saved[28][0:len(data_saved[28])-1]))
 else:
     Lsum_write.set(0)
 
-ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=8,column=3, sticky=W)
+ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=6,column=3, sticky=W)
 Memory_string_var = StringVar(value="")
-depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=8,column=3, padx = 130) 
+depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=6,column=3, padx = 130) 
 
 
 
@@ -606,6 +596,10 @@ OMP_enable = IntVar()
 Checkbutton(Mafenetre, text="Enable Parallel computing", variable=OMP_enable).grid(row=Line_second_part+11, column = 0, sticky=W)
 if(If_save == 1):
     OMP_enable.set(int(data_saved[29][0:len(data_saved[29])-1]))
+
+Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+12, column=0, sticky=W)
+Set_Number_Thread = IntVar()
+Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+12, column=0, sticky=W, padx=170)
 
 
 
@@ -680,13 +674,8 @@ else:
 
 
 
-
-
-
-#Bouton quitter
 Button(Mafenetre, text='Close', command=Mafenetre.destroy).grid(row=25, column=0, sticky=W)
 Button(Mafenetre, text='Make File', command=get_entry_fields).grid(row=25, column=0, sticky=W, padx=50)
 
 
-# Lancement du gestionnaire d'événements
 Mafenetre.mainloop()
