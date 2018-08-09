@@ -16,7 +16,7 @@ module ModuleFunction
 
 		implicit none
 
-		real :: dt,x_part,y_part,ux_part,uy_part
+		real :: dt,x_part,y_part,ux_part,uy_part, vel_temp
 		real :: Prob_top, Prob_bot
 		real :: RandomInjector,RandomPosition,NewPosition
 		integer :: i,N,ny,ii
@@ -51,11 +51,16 @@ module ModuleFunction
 						ii = ii + 1
 					end do
 					ii = ii-1
+					
 					NewPosition = RandomPosition/(PartSeeder(1,ii+1)-PartSeeder(1,ii)) &
 					& +ii-1/(PartSeeder(1,ii+1)-PartSeeder(1,ii))*PartSeeder(1,ii)
 					NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+					
+					vel_temp = abs(RandomPosition*(Y_VELOCITY(1,ii+1)-Y_VELOCITY(1,ii)) &
+					& +Y_VELOCITY(1,ii))
+					
 					Particle(i,2) = NewPosition
-					Particle(i,3) = MeshCaracteristics(4)
+					Particle(i,3) = MeshCaracteristics(4) - rand()*vel_temp*dt
 					Particle(i,4) = r4_normal_01 ()
 
 
@@ -67,11 +72,16 @@ module ModuleFunction
 							ii = ii + 1
 						end do
 						ii = ii-1
+						
 						NewPosition = RandomPosition/(PartSeeder(3,ii+1)-PartSeeder(3,ii)) &
 						& +ii-1/(PartSeeder(3,ii+1)-PartSeeder(3,ii))*PartSeeder(3,ii)
 						NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+						
+						vel_temp = abs(RandomPosition*(Y_VELOCITY(ny,ii+1)-Y_VELOCITY(ny,ii)) &
+						& +Y_VELOCITY(1,ii))
+									
 						Particle(i,2) = NewPosition
-						Particle(i,3) = MeshCaracteristics(3)
+						Particle(i,3) = MeshCaracteristics(3) + rand()*vel_temp*dt
 						Particle(i,4) = r4_normal_01 ()
 						
 					else
@@ -81,10 +91,15 @@ module ModuleFunction
 							ii = ii + 1
 						end do
 						ii = ii-1
+						
 						NewPosition = RandomPosition/(PartSeeder(2,ii+1)-PartSeeder(2,ii)) &
 						& +ii-1/(PartSeeder(2,ii+1)-PartSeeder(2,ii))*PartSeeder(2,ii)
 						NewPosition = MeshCaracteristics(3)+NewPosition*MeshCaracteristics(5)
-						Particle(i,2) = MeshCaracteristics(1)
+											
+						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
+						& +X_VELOCITY(ii,1))
+					
+						Particle(i,2) = MeshCaracteristics(1) + rand()*vel_temp*dt
 						Particle(i,3) = NewPosition
 						Particle(i,4) = r4_normal_01 ()
 					end if
