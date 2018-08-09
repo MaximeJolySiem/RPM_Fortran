@@ -52,10 +52,10 @@ logical :: dir_e
 
 
 !Verify and create Data folder
-inquire(file='./Data/.', exist=dir_e)
+inquire(file='./Output/.', exist=dir_e)
 
 if (.not. dir_e ) then
-  call system('mkdir Data')
+  call system('mkdir Output')
 end if
 
 

@@ -15,7 +15,7 @@ module ModuleWrite
 
 		N = size(Particle_to_write(:,1))
 
-		OPEN(11, FILE='Data/'//'Particle'//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
+		OPEN(11, FILE='Output/'//'Particle'//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
 
 		DO i = 1,N
 			write(11,*) Particle_to_write(i,:)
@@ -34,7 +34,7 @@ module ModuleWrite
 
 		N = size(Particle_to_write(:,1))
 
-		OPEN(11, FILE='Data/'//'Particle'//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		OPEN(11, FILE='Output/'//'Particle'//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
 
 		DO i = 1,N
 			write(11) Particle_to_write(i,:)
@@ -54,7 +54,7 @@ module ModuleWrite
 		character(len=*) :: FileName
 		nx = size(DataToWrite(1,:))
 		ny = size(DataToWrite(:,1))
-		OPEN(9, FILE='Data/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
+		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
 		DO i = 1,ny
 			DO j = 1,nx
 				write(9,*) DataToWrite(i,j)
@@ -75,7 +75,7 @@ module ModuleWrite
 		character(len=*) :: FileName
 		nx = size(DataToWrite(1,:))
 		ny = size(DataToWrite(:,1))
-		OPEN(9, FILE='Data/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
 		DO i = 1,ny
 			DO j = 1,nx
 				write(9) DataToWrite(i,j)
