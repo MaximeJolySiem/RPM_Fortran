@@ -65,6 +65,26 @@ module ModuleMath
 			trapz = trapz + delta*(y(i+1)+y(i))/2
 		end do
 	end function trapz
+
+
+	function EvalPoly(Polynome,x)
+
+		implicit none
+
+		real, dimension(:) :: Polynome
+		real :: x, EvalPoly
+		integer :: i, n
+
+		x = 1
+		n = size(Polynome)
+		EvalPoly = 0
+
+		do i = 1,n
+			EvalPoly = EvalPoly*x + Polynome(n+1-i)
+		end do
+
+
+	end function EvalPoly
 	
 	
 end Module ModuleMath

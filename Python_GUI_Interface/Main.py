@@ -599,7 +599,7 @@ if(If_save == 1):
 
 Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+12, column=0, sticky=W)
 Set_Number_Thread = IntVar()
-Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+12, column=0, sticky=W, padx=170)
+Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+13, column=0, sticky=W)
 
 
 

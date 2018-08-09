@@ -1,6 +1,8 @@
 module ModuleFunction
 
 	use ModuleMath
+	use ModuleFilter
+	use ModuleRead
 
 	implicit none
 
@@ -116,57 +118,8 @@ module ModuleFunction
 
 
 
-	subroutine Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask)
+	subroutine Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius,FilterType)
 
-		implicit none
-
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp
-		integer :: nx,ny,N_particle,i,j,k
-		real, allocatable :: StreamFunction(:,:)
-		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
-		real, dimension(5) :: MeshCaracteristics
-		real, dimension(2) :: coord
-
-		delta = MeshCaracteristics(5)
-		nx = size(TKE(1,:))
-		ny = size(TKE(:,1))
-		N_particle = size(Particle(:,1))
-
-		do i = 1,ny
-			do j = 1,nx
-				if (vtkMask(i,j) == 1) then
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						Lambda_grid = Lambda(i,j)
-						TKE_grid = TKE(i,j)
-						temp = 0
-						do k = 1,N_particle
-							coord(1) = x_grid-Particle(k,2)
-							coord(2) = y_grid-Particle(k,3)
-							if (coord(1)**2+coord(2)**2 < 4*Lambda_grid**2) then
-								TKE_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKE)
-								Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-								if (Lambda_part>1e-4) then
-									if (TKE_part>0) then
-										temp = temp + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
-									end if
-								end if
-							end if
-
-						end do
-						StreamFunction(i,j) = temp
-				end if
-			end do
-		end do
-
-	end subroutine Calc_Fluctuation
-
-	
-	
-	
-
-	
-	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius)
 
 		implicit none
 
@@ -177,9 +130,11 @@ module ModuleFunction
 		real, dimension(5) :: MeshCaracteristics
 		real, dimension(2) :: coord
 		integer, dimension(4) :: Box
-		
+
+		character(len=*) :: FilterType
+
 		integer :: Parallel_computing
-		
+
 		delta = MeshCaracteristics(5)
 		nx = size(TKE(1,:))
 		ny = size(TKE(:,1))
@@ -188,7 +143,66 @@ module ModuleFunction
 		
 		N_particle = size(Particle(:,1))
 		
-		if (Parallel_computing == 1) then
+		if (FilterType == "Gaussian") then
+			do k = 1, N_particle
+				
+			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+			do i = Box(1), Box(2)
+					do j = Box(3), Box(4)
+						if (vtkMask(i,j) == 1) then
+							
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							
+							coord(1) = x_grid-Particle(k,2)
+							coord(2) = y_grid-Particle(k,3)
+							
+							TKE_grid = TKE(i,j)
+							
+							temp(i,j) = temp(i,j) + Gaussian_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
+						
+						end if
+					end do
+				end do
+			end do		
+		end if
+
+		StreamFunction = temp
+		deallocate (temp)
+
+	end subroutine Calc_Fluctuation
+
+	
+	
+	
+
+	
+	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius,FilterType)
+
+		implicit none
+
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2
+		integer :: nx,ny,N_particle,i,j,k,Radius
+		real, allocatable :: StreamFunction(:,:), temp(:,:)
+		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
+		real, dimension(5) :: MeshCaracteristics
+		real, dimension(2) :: coord
+		integer, dimension(4) :: Box
+
+		character(len=*) :: FilterType
+
+		integer :: Parallel_computing
+
+		delta = MeshCaracteristics(5)
+		nx = size(TKE(1,:))
+		ny = size(TKE(:,1))
+		allocate (temp(ny,nx))
+		temp = 0
+		
+		N_particle = size(Particle(:,1))
+		
+		if (FilterType == "Gaussian") then
 			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
 			do k = 1, N_particle
 				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
@@ -196,48 +210,71 @@ module ModuleFunction
 				do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
 						if (vtkMask(i,j) == 1) then
-						
+							
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 						
 							coord(1) = x_grid-Particle(k,2)
 							coord(2) = y_grid-Particle(k,3)
-						
-							TKE_grid = TKE(i,j)
 							
-							temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
-						
+							TKE_grid = TKE(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
+
 						end if
 					end do
 				end do
 			end do
 			!$OMP END PARALLEL DO
 			
-			
-		else
+		else if (FilterType == "VonKarman") then
+			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
 			do k = 1, N_particle
-			
-			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
+				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+				do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
 						if (vtkMask(i,j) == 1) then
-						
+							
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 						
 							coord(1) = x_grid-Particle(k,2)
 							coord(2) = y_grid-Particle(k,3)
-						
-							TKE_grid = TKE(i,j)
 							
-							temp(i,j) = temp(i,j) + Calc_stream(coord,TKE_grid,Lambda_part)*Particle(k,4)
-						
+							TKE_grid = TKE(i,j)
+							temp(i,j) = temp(i,j) + VonKarman_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
+
 						end if
 					end do
 				end do
-			end do		
+			end do
+			!$OMP END PARALLEL DO
+
+		else if (FilterType == "Liepmann") then
+			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
+			do k = 1, N_particle
+				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+				do i = Box(1), Box(2)
+					do j = Box(3), Box(4)
+						if (vtkMask(i,j) == 1) then
+							
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+						
+							coord(1) = x_grid-Particle(k,2)
+							coord(2) = y_grid-Particle(k,3)
+							
+							TKE_grid = TKE(i,j)
+							temp(i,j) = temp(i,j) + Liepmann_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
+
+						end if
+					end do
+				end do
+			end do
+			!$OMP END PARALLEL DO
 		end if
+
 		StreamFunction = temp
 		deallocate (temp)
 
@@ -248,20 +285,7 @@ module ModuleFunction
 	
 	
 	
-	
-	function Calc_stream(coord,TKE_part,Lambda_part)
 
-		implicit none
-
-		real :: pi
-		real :: TKE_part,Lambda_part,R,Calc_stream
-		real,dimension(2) :: coord
-
-		pi = 3.14159265358
-		R = sqrt(coord(1)**2+coord(2)**2)
-		Calc_stream = sqrt(TKE_part*2/pi)*exp(-pi*R**2/(2*Lambda_part**2))
-
-	end function Calc_stream
 
 
 	function Get_value(x,y,MeshCaracteristics,Data_to_get)

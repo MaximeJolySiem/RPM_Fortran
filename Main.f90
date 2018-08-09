@@ -35,7 +35,7 @@ real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
 
-character(len=:), allocatable :: File_path
+character(len=:), allocatable :: File_path, FilterType
 
 integer :: Parallel_computing
 
@@ -63,9 +63,12 @@ end if
 call srand(seed)
 
 !VTK Path file
-allocate(character(len(GetStringVtkValue())) :: File_path)
+allocate(character(len(GetStringVtkValue("cfddatafile"))) :: File_path)
 
-File_path = GetStringVtkValue()
+File_path = GetStringVtkValue("cfddatafile")
+
+allocate(character(len(GetStringVtkValue("filter"))) :: FilterType)
+FilterType = GetStringVtkValue("filter")
 
 ! Mesh caracteristics
 x_min = GetRealVtkValue("x_min")
@@ -203,7 +206,16 @@ do i = 1,Nt
 	
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 	!call WriteParticle(TimeStep,Particle)
-	call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius)
+
+	if (Parallel_computing == 1) then
+		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
+			& Parallel_computing,Radius,FilterType)
+	else
+		call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
+			& Parallel_computing,Radius,FilterType)
+	end if
+
+
 	StreamFunction = StreamFunction*Volume
 	call der2_x(Uy, StreamFunction, vtkMask, MeshCaracteristics) 
 	Uy = -Uy !Uy = -dpsi/dx

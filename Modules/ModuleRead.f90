@@ -67,23 +67,25 @@ module ModuleRead
 	
 	
 	
-	function GetStringVtkValue()
+	function GetStringVtkValue(StringToSearch)
 
 		character*200 :: string
 		integer :: line_no, io, nlines, len_word
+		character(len=*) :: StringToSearch
 		character(len=:), allocatable :: GetStringVtkValue
 
-		len_word = len("cfddatafile")
+		len_word = len(StringToSearch)
+
 
 		open (18, file='SNGM_config')
 
 		do while(.true.)
-			read(18,'(a)',end=10) string
+			read (18,'(a)',end=10) string
 			if(string.eq."") then 
 				string = " "
 			end if
 
-			if(string(1:len_word) == "cfddatafile") then
+			if(string(1:len_word) == StringToSearch) then
 				allocate(character(len(trim(string(len_word+2:200)))) :: GetStringVtkValue)
 				GetStringVtkValue = trim(string(len_word+2:200))
 				exit
@@ -92,6 +94,7 @@ module ModuleRead
 		10  continue
 		
 		close(18)
+
 
 
 	end function GetStringVtkValue	
