@@ -1,135 +1,15 @@
 module ModuleFunction
+
+	use ModuleMath
+
 	implicit none
 
 	contains
 
-	character(len=20) function str(k)
-!   	"Convert an integer to string."
-    	integer, intent(in) :: k
-    	write (str, *) k
-    	str = adjustl(str)
-	end function str
-
-
-	character(len=20) function hourstr(Total_time)
- 	
-		implicit none
-
-    	real :: Total_time
-    	integer :: hour,minute,seconde
-    	character(len=3) :: strh
-    	character(len=2) :: strm,strs
-    	hour = floor(Total_time/3600)
-		minute = floor((Total_time-hour*3600)/60)
-		seconde = floor((Total_time-hour*3600-minute*60))
-    	write (strh, '(I3.3,A5)') hour
-    	write (strm, '(I2.2,A5)') minute
-    	write (strs, '(I2.2,A5)') seconde
-    	hourstr = strh//':'//strm//':'//strs
-	end function hourstr
-
-
-	function r4_normal_01 ()
-
-	  implicit none
-	  real ( kind = 4 ) r1
-	  real ( kind = 4 ) r2
-	  real ( kind = 4 ) r4_normal_01
-	  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-	  real ( kind = 4 ) r4_uniform_01
-	  real ( kind = 4 ) x
-
-	  r1 = rand()
-	  r2 = rand()
-	  x = sqrt ( - 2.0E+00 * log ( r1 ) ) * cos ( 2.0E+00 * r4_pi * r2 )
-
-	  r4_normal_01 = x
-
-	end function r4_normal_01
 
 
 
 
-	subroutine WriteParticle(TimeStep,Particle_to_write)
-
-		implicit none
-
-		real,dimension(:,:) :: Particle_to_write
-		integer :: i,N,TimeStep
-
-		N = size(Particle_to_write(:,1))
-
-		OPEN(11, FILE='Data/'//'Particle'//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
-
-		DO i = 1,N
-			write(11,*) Particle_to_write(i,:)
-    	END DO
-
-    	close(11)
-
-	end subroutine WriteParticle
-
-
-	subroutine WriteBinParticle(TimeStep,Particle_to_write)
-
-		implicit none
-
-		real,dimension(:,:) :: Particle_to_write
-		integer :: i,N,TimeStep
-
-		N = size(Particle_to_write(:,1))
-
-		OPEN(11, FILE='Data/'//'Particle'//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
-
-		DO i = 1,N
-			write(11) Particle_to_write(i,:)
-    	END DO
-
-    	close(11)
-
-	end subroutine WriteBinParticle
-
-
-	subroutine WriteData(TimeStep,DataToWrite,FileName)
-
-		implicit none
-
-		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep
-		character(len=*) :: FileName
-		nx = size(DataToWrite(1,:))
-		ny = size(DataToWrite(:,1))
-		OPEN(9, FILE='Data/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
-		DO i = 1,ny
-			DO j = 1,nx
-				write(9,*) DataToWrite(i,j)
-	    	END DO
-    	END DO
-
-    	close(9)
-
-	end subroutine WriteData
-
-
-	subroutine WriteBinData(TimeStep,DataToWrite,FileName)
-
-		implicit none
-
-		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep
-		character(len=*) :: FileName
-		nx = size(DataToWrite(1,:))
-		ny = size(DataToWrite(:,1))
-		OPEN(9, FILE='Data/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
-		DO i = 1,ny
-			DO j = 1,nx
-				write(9) DataToWrite(i,j)
-	    	END DO
-    	END DO
-
-    	close(9)
-
-	end subroutine WriteBinData
 
 
 	subroutine MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
@@ -397,27 +277,6 @@ module ModuleFunction
 		Get_value = dfx*dx/delta + dfy*dy/delta + dfxy*dx*dy/delta + Data_to_get(i_min,j_min)
 
 	end function Get_value
-
-
-
-	
-	
-	function trapz(y,delta)
-		
-		implicit none
-
-		real :: trapz, delta
-		integer :: N,i
-		real, dimension(:) :: y
-
-		N = size(y)
-		trapz = 0
-		do i = 1,N-1
-			trapz = trapz + delta*(y(i+1)+y(i))/2
-		end do
-	end function trapz
-
-
 
 
 

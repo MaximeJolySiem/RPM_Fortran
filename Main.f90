@@ -1,8 +1,10 @@
 PROGRAM main
 
+use ModuleMath
 use ModuleDerivatives ! Appel du module derivatives
 use ModuleFunction ! Appel du module function
 use ModuleRead ! Appel du module read
+use ModuleWrite
 ! use omp_lib ! Appel du module pour parallelisation
 
 implicit none
