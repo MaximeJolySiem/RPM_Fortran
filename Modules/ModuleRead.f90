@@ -190,7 +190,78 @@ module ModuleRead
 	end function GetVtkField	
 	
 	
+
+
+	function ReadParticleSave(Particle_path)
+
+		character(len=*) :: Particle_path
+		character*3 :: extension
+		real, allocatable :: ReadParticleSave(:,:)
+		integer :: count, Nword, i
+
+		Nword = len(Particle_path)
+		extension = Particle_path(Nword-2:Nword)
+
+		if (extension == "bin") then
+			OPEN(3,FILE=Particle_path,FORM='UNFORMATTED',ACTION='READ',STATUS='OLD')
+		else if (extension == "csv") then
+			OPEN(3,FILE=Particle_path,FORM='formatted',ACTION='READ',STATUS='OLD')
+		end if
+
+		count = 0
+		DO 
+			if (extension == "bin") then
+		    	READ (3, END=10) 
+		    else if (extension == "csv") then
+		    	READ (3, *, END=10) 
+		    end if
+		    count = count + 1 
+		END DO 
+
+		10 close(3)
+
+		allocate(ReadParticleSave(count,4))
+
+
+		if (extension == "bin") then
+			OPEN(3,FILE=Particle_path,FORM='UNFORMATTED',ACTION='READ',STATUS='OLD')
+		else if (extension == "csv") then
+			OPEN(3,FILE=Particle_path,FORM='formatted',ACTION='READ',STATUS='OLD')
+		end if
+
+		do i = 1,count
+			if (extension == "bin") then
+		    	READ(3) ReadParticleSave(i,:)
+		    else if (extension == "csv") then
+		    	READ(3,*) ReadParticleSave(i,:)
+		    end if
+			
+		end do
+		close(3)
+
+
+	end function ReadParticleSave	
 	
+
+
+	subroutine GetTimeStepSave(TimeStep,Particle_path)
+
+		integer :: Nword, k, TimeStep
+		character(len=*) :: Particle_path
+
+		Nword = len(Particle_path)
+
+		do k = 1,100
+			if (Particle_path(Nword-3-k:Nword-3-k) == "e") then
+				exit
+			end if
+		end do
+
+		READ(Particle_path(Nword-2-k:Nword-4),*) TimeStep
+
+		TimeStep = TimeStep+1
+
+	end subroutine GetTimeStepSave	
 	
 
 END module ModuleRead

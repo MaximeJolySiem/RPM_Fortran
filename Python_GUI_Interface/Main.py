@@ -10,6 +10,7 @@ else:
 
 vtkFilename = "Empty"
 meshFilename = "Empty"
+ParticleFilename = "Empty"
 x_min = 0
 x_max = 0
 y_min = 0
@@ -163,6 +164,11 @@ def get_entry_fields():
    text_file.write("write_Vor=" + str(Vor_write.get()) + "\n")
    text_file.write("write_Lsum=" + str(Lsum_write.get()) + "\n")
    text_file.write("write_binary_format=" + str(bin_write.get()) + "\n")
+
+   text_file.write("\n") 
+   text_file.write("[Save]\n")
+   text_file.write("Enable_save="+ str(Save_part.get()) + "\n")
+   text_file.write("Save_path=" + ParticleFilename + "\n")
    
    text_file.close()
    
@@ -211,6 +217,8 @@ def get_entry_fields():
    text_file.write(str(Lsum_write.get()) + "\n")
    text_file.write(str(OMP_enable.get()) + "\n")
    text_file.write(str(bin_write.get()) + "\n")
+   text_file.write(str(Save_part.get()) + "\n")
+   text_file.write(ParticleFilename + "\n")
    
    text_file.close()    
    
@@ -328,6 +336,15 @@ def openmeshfile():
           Path_mesh.insert(0,meshFilename)
 
 
+def openParticlefile():
+    global ParticleFilename
+    ParticleFilename = filedialog.askopenfilename(parent=Mafenetre)
+    print(ParticleFilename)
+    
+    if len(ParticleFilename) > 4:
+        Path_particle.delete(0, 'end')
+        Path_particle.insert(0,ParticleFilename)
+
     
  
 
@@ -386,6 +403,7 @@ Mafenetre = Tk()
 Mafenetre.title('RPM Options')
 
 Label(Mafenetre, text="Meanflow parameters", font='Helvetica 18 bold').grid(row=0, column=0, sticky=W)
+
 Label(Mafenetre, text="Open vtk file : ").grid(row=1, column=0, sticky=W)
 ButtonVtk = Button(Mafenetre, text="Directory", command=openvtkfile).grid(row=1,column=0, padx=100, sticky=W)
 Path_vtk = Entry(Mafenetre)
@@ -572,32 +590,31 @@ Label(Mafenetre, text="Scaling type : ").grid(row=Line_second_part+5, column=0, 
 Scaling_type = StringVar()
 Radiobutton(Mafenetre, text="Particle", variable=Scaling_type, value="particle").grid(row=Line_second_part+6, column = 0, sticky=W)
 Radiobutton(Mafenetre, text="Grid-Particle", variable=Scaling_type, value="kGrid_lambdaParticle").grid(row=Line_second_part+7, column = 0, sticky=W)
-Radiobutton(Mafenetre, text="Grid", variable=Scaling_type, value="grid").grid(row=Line_second_part+8, column = 0, sticky=W)
 if(If_save == 1):
     Scaling_type.set(data_saved[14][0:len(data_saved[14])-1])
 else:
     Scaling_type.set("particle")
 
-Label(Mafenetre, text="Radius of consideration : ").grid(row=Line_second_part+9, column=0, sticky=W)
+Label(Mafenetre, text="Radius of consideration : ").grid(row=Line_second_part+8, column=0, sticky=W)
 Radius_consideration = Entry(Mafenetre)
 Radius_consideration.config(width=2)
-Radius_consideration.grid(row=Line_second_part+9, column=0, padx = 165)
+Radius_consideration.grid(row=Line_second_part+8, column=0, padx = 165)
 if(If_save == 1):
     Radius_consideration.insert(0,data_saved[15][0:len(data_saved[15])-1])
 else:
     Radius_consideration.insert(0,"0")
 
 FD_enable = IntVar()
-Checkbutton(Mafenetre, text="Enable Finite Difference", variable=FD_enable).grid(row=Line_second_part+10, column = 0, sticky=W)
+Checkbutton(Mafenetre, text="Enable Finite Difference", variable=FD_enable).grid(row=Line_second_part+9, column = 0, sticky=W)
 if(If_save == 1):
     FD_enable.set(int(data_saved[21][0:len(data_saved[21])-1]))
 
 OMP_enable = IntVar()
-Checkbutton(Mafenetre, text="Enable Parallel computing", variable=OMP_enable).grid(row=Line_second_part+11, column = 0, sticky=W)
+Checkbutton(Mafenetre, text="Enable Parallel computing", variable=OMP_enable).grid(row=Line_second_part+10, column = 0, sticky=W)
 if(If_save == 1):
     OMP_enable.set(int(data_saved[29][0:len(data_saved[29])-1]))
 
-Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+12, column=0, sticky=W)
+Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+11, column=0, sticky=W)
 Set_Number_Thread = IntVar()
 Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+13, column=0, sticky=W)
 
@@ -670,6 +687,24 @@ else:
 
 
 
+
+Label(Mafenetre, text="Save parameters", font='Helvetica 18 bold').grid(row=Line_second_part, column=3, sticky=W)
+
+Save_part = IntVar()
+Checkbutton(Mafenetre, text="Enable save", variable=Save_part).grid(row=Line_second_part+1, column = 3, sticky=W)
+if(If_save == 1):
+    Save_part.set(int(data_saved[31][0:len(data_saved[31])-1]))
+
+Label(Mafenetre, text="Open particle file : ").grid(row=Line_second_part+2, column=3, sticky=W)
+ButtonVtk = Button(Mafenetre, text="Directory", command=openParticlefile).grid(row=Line_second_part+2,column=3, padx=130, sticky=W)
+Path_particle = Entry(Mafenetre)
+Path_particle.config(width=20)
+Path_particle.grid(row=Line_second_part+3,column=3, sticky=W)
+if(If_save == 1):
+    Path_particle.insert(0,data_saved[32][0:len(data_saved[32])-1])
+    ParticleFilename = data_saved[32][0:len(data_saved[32])-1]
+else:
+    Path_particle.insert(0,"Empty")
 
 
 

@@ -18,8 +18,9 @@ real :: dt, T, Volume
 
 integer :: nx,ny,i,j,Radius,k
 integer :: Nparticle
-integer :: TimeStep,Nt
+integer :: TimeStep,Nt,Init_T
 integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
+integer :: IsSave
 integer :: Get_Number_Thread
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
@@ -32,7 +33,7 @@ real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
 
-character(len=:), allocatable :: File_path, FilterType, ScalingType
+character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
 
 integer :: Parallel_computing
 
@@ -61,7 +62,6 @@ call srand(seed)
 
 !VTK Path file
 allocate(character(len(GetStringVtkValue("cfddatafile"))) :: File_path)
-
 File_path = GetStringVtkValue("cfddatafile")
 
 allocate(character(len(GetStringVtkValue("filter"))) :: FilterType)
@@ -150,25 +150,33 @@ deallocate (X_VELOCITYTemp,Y_VELOCITYTemp,Z_VORTICITYTemp,TKETemp,SDRTemp,vtkMas
 ! Seeding
 PartSeeder = GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
 
+! Initialisation particle
+IsSave = GetIntVtkValue("Enable_save")
+
+if (IsSave == 1) then
+	allocate(character(len(GetStringVtkValue("Save_path"))) :: PathSave)
+	PathSave= GetStringVtkValue("Save_path")
+	Particle = ReadParticleSave(PathSave)
+	call GetTimeStepSave(TimeStep,PathSave)
+else
+	! First step
+	Particle = InitParticle(MeshCaracteristics,Nparticle,vtkMask)
+	TimeStep = 1
+end if
+
+
+
+Init_T = TimeStep
+
+
+! Initializing output datas
 allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
-
-
-
-! Initialisation particle
-Particle = InitParticle(MeshCaracteristics,Nparticle,vtkMask)
-
-
-
-! First step
-TimeStep = 1
-
-
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
 
 ! Moving particle, calculating the stream function for each step
-do i = 1,Nt
+do i = Init_T,Nt
 	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
 	
@@ -231,11 +239,11 @@ do i = 1,Nt
 	
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_final)
 
-	if (i == 1) then
+	if (i == Init_T) then
 		nb_ticks_t0 = nb_ticks_initial
 		nb_ticks = nb_ticks_final - nb_ticks_initial
 		elapsed_time = REAL(nb_ticks) / nb_ticks_sec
-		total_time = Nt*(elapsed_time)
+		total_time = (Nt+1-Init_T)*(elapsed_time)
 		print *, 'ESTIMATION TIME NEEDED: '//hourstr(Total_time-(elapsed_time))
 	end if
 	

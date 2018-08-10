@@ -323,55 +323,118 @@ module ModuleFunction
 		
 		
 		if (FilterType == "Gaussian") then
-			do k = 1, N_particle
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-						TKE_grid = TKE(i,j)*vtkMask(i,j)
-						temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+
+			if (ScalingType == "Particle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKe)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do		
+				end do	
+
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+
+			else
+				stop 0		
+			end if	
 			
 			
 			
 			
 		else if (FilterType == "VonKarman") then
-			do k = 1, N_particle
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-						TKE_grid = TKE(i,j)*vtkMask(i,j)
-						temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)					
+
+			if (ScalingType == "Particle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKe)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do		
+				end do	
+
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+
+			else
+				stop 0		
+			end if	
 		
 		
 		
 		
 		else if (FilterType == "Liepmann") then
-			do k = 1, N_particle
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-						TKE_grid = TKE(i,j)*vtkMask(i,j)
-						temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+
+			if (ScalingType == "Particle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKe)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do		
+				end do	
+
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+
+			else
+				stop 0		
+			end if
 		end if
 
 		StreamFunction = temp
@@ -420,94 +483,130 @@ module ModuleFunction
 		
 		
 		if (FilterType == "Gaussian") then
-			if (ScalingType == "kGrid_lambdaParticle") then
+
+			if (ScalingType == "Particle") then
 				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
 				do k = 1, N_particle
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
 						do j = Box(3), Box(4)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKE)*vtkMask(i,j)
 							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
 						end do
 					end do
 				end do	
 				!$OMP END PARALLEL DO
+
 			elseif (ScalingType == "kGrid_lambdaParticle") then
 				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
 				do k = 1, N_particle
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
 						do j = Box(3), Box(4)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 							TKE_grid = TKE(i,j)*vtkMask(i,j)
 							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
 						end do
 					end do
 				end do	
 				!$OMP END PARALLEL DO
+
 			else
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
-				do k = 1, N_particle
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
-						end do
-					end do
-				end do	
-				!$OMP END PARALLEL DO			
+				stop 0		
 			end if
 			
 			
 			
 		else if (FilterType == "VonKarman") then
-			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
-			do k = 1, N_particle
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-						TKE_grid = TKE(i,j)*vtkMask(i,j)
-						temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)					
+
+			if (ScalingType == "Particle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKE)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do	
-			!$OMP END PARALLEL DO
+				end do	
+				!$OMP END PARALLEL DO
+
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+				!$OMP END PARALLEL DO
+
+			else
+				stop 0		
+			end if
 
 			
 			
 			
 		else if (FilterType == "Liepmann") then
-			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
-			do k = 1, N_particle
-			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-			do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						x_grid = MeshCaracteristics(1) + (j-1)*delta
-						y_grid = MeshCaracteristics(3) + (i-1)*delta
-						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
-						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-						TKE_grid = TKE(i,j)*vtkMask(i,j)
-						temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+
+			if (ScalingType == "Particle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,TKE)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do	
-			!$OMP END PARALLEL DO
+				end do	
+				!$OMP END PARALLEL DO
+
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+					do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+				!$OMP END PARALLEL DO
+
+			else
+				stop 0		
+			end if
+
 		end if
 
 		StreamFunction = temp
