@@ -10,8 +10,55 @@ module ModuleFunction
 
 
 
+	function InitParticle(MeshCaracteristics,Nparticle,vtkMask)
+	
+	real,dimension(:,:) :: vtkMask
+	real,dimension(5) :: MeshCaracteristics
+	real, allocatable :: InitParticle(:,:), ParticleSeeder(:,:), NumberPart(:)
+	integer :: Nparticle, Particle_available_counter, k, i
+	real :: x_min, x_max, y_min, y_max
+	
+	x_min = MeshCaracteristics(1)
+	x_max = MeshCaracteristics(2)
+	y_min = MeshCaracteristics(3)
+	y_max = MeshCaracteristics(4)
+	
+	allocate (ParticleSeeder(Nparticle,4))
+	do i = 1,Nparticle
+		ParticleSeeder(i,1) = i
+		ParticleSeeder(i,2) = x_min + rand()*(x_max-x_min)
+		ParticleSeeder(i,3) = y_min + rand()*(y_max-y_min)
+		ParticleSeeder(i,4) = r4_normal_01 ()
+	end do
 
+	! Removing particle in airfoil
+	allocate (NumberPart(Nparticle))
 
+	Particle_available_counter = 0
+
+	do i = 1,Nparticle
+		if (Get_value(ParticleSeeder(i,2),ParticleSeeder(i,3),MeshCaracteristics,vtkMask) == 1) then
+			NumberPart(i) = 1
+			Particle_available_counter = Particle_available_counter+1
+		end if
+	end do
+
+	allocate (InitParticle(Particle_available_counter,4))
+
+	k = 1
+	do i = 1,Nparticle
+		if (NumberPart(i) == 1) then
+			InitParticle(k,1) = ParticleSeeder(i,1)
+			InitParticle(k,2) = ParticleSeeder(i,2)
+			InitParticle(k,3) = ParticleSeeder(i,3)
+			InitParticle(k,4) = ParticleSeeder(i,4)
+			k = k+1
+		end if
+	end do
+
+	deallocate (NumberPart,ParticleSeeder)
+	
+	end function InitParticle
 
 
 	subroutine MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
