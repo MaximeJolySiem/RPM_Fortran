@@ -8,7 +8,116 @@ module ModuleFunction
 
 	contains
 
+	function Get_value(x,y,MeshCaracteristics,Data_to_get)
 
+		implicit none
+
+		real :: x,y,dx,dy,dfx,dfy,dfxy,Get_value
+		real :: delta
+		integer :: i_min,i_max,j_min,j_max
+		real,dimension(:,:) :: Data_to_get
+		real,dimension(5) :: MeshCaracteristics
+		
+		delta = MeshCaracteristics(5)
+
+
+		j_min = floor((x-MeshCaracteristics(1))/delta)+1
+		j_max = floor((x-MeshCaracteristics(1))/delta)+2
+		i_min = floor((y-MeshCaracteristics(3))/delta)+1
+		i_max = floor((y-MeshCaracteristics(3))/delta)+2
+
+		dfy = Data_to_get(i_min,j_max)-Data_to_get(i_min,j_min)
+		dfx = Data_to_get(i_max,j_min)-Data_to_get(i_min,j_min)
+		dfxy = Data_to_get(i_min,j_min)+Data_to_get(i_max,j_max)-Data_to_get(i_min,j_max)-Data_to_get(i_max,j_min)
+
+		dx = x-(MeshCaracteristics(1)+(j_min-1)*delta)
+		dy = y-(MeshCaracteristics(3)+(i_min-1)*delta)
+
+		Get_value = dfx*dx/delta + dfy*dy/delta + dfxy*dx*dy/delta + Data_to_get(i_min,j_min)
+
+	end function Get_value
+
+
+
+
+	function GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
+		
+		implicit none
+
+		real :: delta
+		integer :: nx, ny, i
+		real, allocatable :: GetSeeder(:,:), Vx_left(:), Vy_bot(:), Vy_top(:)
+		real, dimension(:,:) :: X_VELOCITY, Y_VELOCITY
+		
+		nx = size(X_VELOCITY(1,:))
+		ny = size(X_VELOCITY(:,1))
+
+		allocate(Vx_left(ny), Vy_bot(nx), Vy_top(nx), GetSeeder(3,max(nx,ny)))
+
+		Vx_left(:) = X_VELOCITY(:,1)
+		Vy_top(:) = abs(Y_VELOCITY(1,:))
+		Vy_bot(:) = abs(Y_VELOCITY(ny,:))
+
+		do i = 1,nx
+			GetSeeder(1,i) = trapz(Vy_top(1:i),delta)
+			GetSeeder(3,i) = trapz(Vy_bot(1:i),delta)
+		end do
+
+		do i = 1,ny
+			GetSeeder(2,i) = trapz(Vx_left(1:i),delta)
+		end do
+
+		GetSeeder(1,:) = GetSeeder(1,:)/MAXVAL(GetSeeder(1,:))
+		GetSeeder(2,:) = GetSeeder(2,:)/MAXVAL(GetSeeder(2,:))
+		GetSeeder(3,:) = GetSeeder(3,:)/MAXVAL(GetSeeder(3,:))
+
+	end function GetSeeder
+
+	
+	
+	
+	function GetBox(x_part,y_part,Lambda_part,MeshCaracteristics,Radius)
+	
+		real :: x_part, y_part, Lambda_part, x_min, y_min, x_max, y_max
+		real :: delta
+		integer :: Radius
+		
+		integer, dimension(4) :: GetBox !GetBox will get [i_min,i_max,j_min,j_max] then indexes of [y_min, y_max, x_min, x_max]
+		real,dimension(5) :: MeshCaracteristics
+		
+		delta = MeshCaracteristics(5)
+		x_min = x_part - Radius*Lambda_part
+		x_max = x_part + Radius*Lambda_part
+		y_min = y_part - Radius*Lambda_part
+		y_max = y_part + Radius*Lambda_part
+		
+		
+		if (x_min < MeshCaracteristics(1)) then
+			x_min = MeshCaracteristics(1)+1e-12
+		end if
+		if (x_max > MeshCaracteristics(2)) then
+			x_max = MeshCaracteristics(2)-1e-12
+		end if
+		if (y_min < MeshCaracteristics(3)) then
+			y_min = MeshCaracteristics(3)+1e-12
+		end if
+		if (y_max > MeshCaracteristics(4)) then
+			y_max = MeshCaracteristics(4)-1e-12
+		end if
+		
+		GetBox(1) = floor((y_min-MeshCaracteristics(3))/delta)+1
+		GetBox(2) = floor((y_max-MeshCaracteristics(3))/delta)+2
+		GetBox(3) = floor((x_min-MeshCaracteristics(1))/delta)+1
+		GetBox(4) = floor((x_max-MeshCaracteristics(1))/delta)+2
+		
+	end function GetBox
+	
+	
+	
+	
+	
+	
+	
 
 	function InitParticle(MeshCaracteristics,Nparticle,vtkMask)
 	
@@ -60,6 +169,17 @@ module ModuleFunction
 	
 	end function InitParticle
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	subroutine MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 
@@ -163,22 +283,31 @@ module ModuleFunction
 
 
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
-	subroutine Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius,FilterType)
+	subroutine Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction, &
+	                           & vtkMask,Parallel_computing,Radius,FilterType,ScalingType)
 
 
 		implicit none
 
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2,R
 		integer :: nx,ny,N_particle,i,j,k,Radius
 		real, allocatable :: StreamFunction(:,:), temp(:,:)
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
 		real, dimension(5) :: MeshCaracteristics
-		real, dimension(2) :: coord
 		integer, dimension(4) :: Box
 
-		character(len=*) :: FilterType
+		character(len=*) :: FilterType, ScalingType
 
 		integer :: Parallel_computing
 
@@ -190,26 +319,56 @@ module ModuleFunction
 		
 		N_particle = size(Particle(:,1))
 		
+		
+		
+		
 		if (FilterType == "Gaussian") then
 			do k = 1, N_particle
-				
-			Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
 			do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
-						if (vtkMask(i,j) == 1) then
-							
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							
-							coord(1) = x_grid-Particle(k,2)
-							coord(2) = y_grid-Particle(k,3)
-							
-							TKE_grid = TKE(i,j)
-							
-							temp(i,j) = temp(i,j) + Gaussian_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
-						
-						end if
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+						TKE_grid = TKE(i,j)*vtkMask(i,j)
+						temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+					end do
+				end do
+			end do		
+			
+			
+			
+			
+		else if (FilterType == "VonKarman") then
+			do k = 1, N_particle
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+			do i = Box(1), Box(2)
+					do j = Box(3), Box(4)
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+						TKE_grid = TKE(i,j)*vtkMask(i,j)
+						temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)					
+					end do
+				end do
+			end do		
+		
+		
+		
+		
+		else if (FilterType == "Liepmann") then
+			do k = 1, N_particle
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+			do i = Box(1), Box(2)
+					do j = Box(3), Box(4)
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+						TKE_grid = TKE(i,j)*vtkMask(i,j)
+						temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
 					end do
 				end do
 			end do		
@@ -223,21 +382,29 @@ module ModuleFunction
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	
-	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask,Parallel_computing,Radius,FilterType)
+	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction, &
+								   & vtkMask,Parallel_computing,Radius,FilterType,ScalingType)
 
 		implicit none
 
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2,R
 		integer :: nx,ny,N_particle,i,j,k,Radius
 		real, allocatable :: StreamFunction(:,:), temp(:,:)
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
 		real, dimension(5) :: MeshCaracteristics
-		real, dimension(2) :: coord
 		integer, dimension(4) :: Box
 
-		character(len=*) :: FilterType
+		character(len=*) :: FilterType, ScalingType
 
 		integer :: Parallel_computing
 
@@ -249,76 +416,97 @@ module ModuleFunction
 		
 		N_particle = size(Particle(:,1))
 		
+		
+		
+		
 		if (FilterType == "Gaussian") then
-			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
-			do k = 1, N_particle
-				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+			if (ScalingType == "kGrid_lambdaParticle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
 				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
 				do i = Box(1), Box(2)
-					do j = Box(3), Box(4)
-						if (vtkMask(i,j) == 1) then
-							
+						do j = Box(3), Box(4)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
-						
-							coord(1) = x_grid-Particle(k,2)
-							coord(2) = y_grid-Particle(k,3)
-							
-							TKE_grid = TKE(i,j)
-							temp(i,j) = temp(i,j) + Gaussian_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
-
-						end if
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
 					end do
-				end do
-			end do
-			!$OMP END PARALLEL DO
+				end do	
+				!$OMP END PARALLEL DO
+			elseif (ScalingType == "kGrid_lambdaParticle") then
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+				do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+				!$OMP END PARALLEL DO
+			else
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				do k = 1, N_particle
+				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+				do i = Box(1), Box(2)
+						do j = Box(3), Box(4)
+							x_grid = MeshCaracteristics(1) + (j-1)*delta
+							y_grid = MeshCaracteristics(3) + (i-1)*delta
+							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+							Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+							TKE_grid = TKE(i,j)*vtkMask(i,j)
+							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
+						end do
+					end do
+				end do	
+				!$OMP END PARALLEL DO			
+			end if
+			
+			
 			
 		else if (FilterType == "VonKarman") then
-			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
+			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
 			do k = 1, N_particle
-				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+			do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
-						if (vtkMask(i,j) == 1) then
-							
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-						
-							coord(1) = x_grid-Particle(k,2)
-							coord(2) = y_grid-Particle(k,3)
-							
-							TKE_grid = TKE(i,j)
-							temp(i,j) = temp(i,j) + VonKarman_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
-
-						end if
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+						TKE_grid = TKE(i,j)*vtkMask(i,j)
+						temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,4)					
 					end do
 				end do
-			end do
+			end do	
 			!$OMP END PARALLEL DO
 
+			
+			
+			
 		else if (FilterType == "Liepmann") then
-			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, coord, TKE_grid)
+			!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
 			do k = 1, N_particle
-				Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
-				Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-				do i = Box(1), Box(2)
+			Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
+			do i = Box(1), Box(2)
 					do j = Box(3), Box(4)
-						if (vtkMask(i,j) == 1) then
-							
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-						
-							coord(1) = x_grid-Particle(k,2)
-							coord(2) = y_grid-Particle(k,3)
-							
-							TKE_grid = TKE(i,j)
-							temp(i,j) = temp(i,j) + Liepmann_filter(coord,TKE_grid,Lambda_part)*Particle(k,4)
-
-						end if
+						x_grid = MeshCaracteristics(1) + (j-1)*delta
+						y_grid = MeshCaracteristics(3) + (i-1)*delta
+						R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
+						Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
+						TKE_grid = TKE(i,j)*vtkMask(i,j)
+						temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,4)
 					end do
 				end do
-			end do
+			end do	
 			!$OMP END PARALLEL DO
 		end if
 
@@ -331,112 +519,6 @@ module ModuleFunction
 	
 	
 	
-	
 
-
-
-	function Get_value(x,y,MeshCaracteristics,Data_to_get)
-
-		implicit none
-
-		real :: x,y,dx,dy,dfx,dfy,dfxy,Get_value
-		real :: delta
-		integer :: i_min,i_max,j_min,j_max
-		real,dimension(:,:) :: Data_to_get
-		real,dimension(5) :: MeshCaracteristics
-		
-		delta = MeshCaracteristics(5)
-
-
-		j_min = floor((x-MeshCaracteristics(1))/delta)+1
-		j_max = floor((x-MeshCaracteristics(1))/delta)+2
-		i_min = floor((y-MeshCaracteristics(3))/delta)+1
-		i_max = floor((y-MeshCaracteristics(3))/delta)+2
-
-		dfy = Data_to_get(i_min,j_max)-Data_to_get(i_min,j_min)
-		dfx = Data_to_get(i_max,j_min)-Data_to_get(i_min,j_min)
-		dfxy = Data_to_get(i_min,j_min)+Data_to_get(i_max,j_max)-Data_to_get(i_min,j_max)-Data_to_get(i_max,j_min)
-
-		dx = x-(MeshCaracteristics(1)+(j_min-1)*delta)
-		dy = y-(MeshCaracteristics(3)+(i_min-1)*delta)
-
-		Get_value = dfx*dx/delta + dfy*dy/delta + dfxy*dx*dy/delta + Data_to_get(i_min,j_min)
-
-	end function Get_value
-
-
-
-
-	function GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
-		
-		implicit none
-
-		real :: delta
-		integer :: nx, ny, i
-		real, allocatable :: GetSeeder(:,:), Vx_left(:), Vy_bot(:), Vy_top(:)
-		real, dimension(:,:) :: X_VELOCITY, Y_VELOCITY
-		
-		nx = size(X_VELOCITY(1,:))
-		ny = size(X_VELOCITY(:,1))
-
-		allocate(Vx_left(ny), Vy_bot(nx), Vy_top(nx), GetSeeder(3,max(nx,ny)))
-
-		Vx_left(:) = X_VELOCITY(:,1)
-		Vy_top(:) = abs(Y_VELOCITY(1,:))
-		Vy_bot(:) = abs(Y_VELOCITY(ny,:))
-
-		do i = 1,nx
-			GetSeeder(1,i) = trapz(Vy_top(1:i),delta)
-			GetSeeder(3,i) = trapz(Vy_bot(1:i),delta)
-		end do
-
-		do i = 1,ny
-			GetSeeder(2,i) = trapz(Vx_left(1:i),delta)
-		end do
-
-		GetSeeder(1,:) = GetSeeder(1,:)/MAXVAL(GetSeeder(1,:))
-		GetSeeder(2,:) = GetSeeder(2,:)/MAXVAL(GetSeeder(2,:))
-		GetSeeder(3,:) = GetSeeder(3,:)/MAXVAL(GetSeeder(3,:))
-
-	end function GetSeeder
-
-	
-	
-	
-	function GetBox(x_part,y_part,Lambda_part,MeshCaracteristics,Radius)
-	
-		real :: x_part, y_part, Lambda_part, x_min, y_min, x_max, y_max
-		real :: delta
-		integer :: j_min, j_max, i_min, i_max, Radius
-		
-		integer, dimension(4) :: GetBox !GetBox will get [i_min,i_max,j_min,j_max] then indexes of [y_min, y_max, x_min, x_max]
-		real,dimension(5) :: MeshCaracteristics
-		
-		delta = MeshCaracteristics(5)
-		x_min = x_part - Radius*Lambda_part
-		x_max = x_part + Radius*Lambda_part
-		y_min = y_part - Radius*Lambda_part
-		y_max = y_part + Radius*Lambda_part
-		
-		
-		if (x_min < MeshCaracteristics(1)) then
-			x_min = MeshCaracteristics(1)+1e-12
-		end if
-		if (x_max > MeshCaracteristics(2)) then
-			x_max = MeshCaracteristics(2)-1e-12
-		end if
-		if (y_min < MeshCaracteristics(3)) then
-			y_min = MeshCaracteristics(3)+1e-12
-		end if
-		if (y_max > MeshCaracteristics(4)) then
-			y_max = MeshCaracteristics(4)-1e-12
-		end if
-		
-		GetBox(1) = floor((y_min-MeshCaracteristics(3))/delta)+1
-		GetBox(2) = floor((y_max-MeshCaracteristics(3))/delta)+2
-		GetBox(3) = floor((x_min-MeshCaracteristics(1))/delta)+1
-		GetBox(4) = floor((x_max-MeshCaracteristics(1))/delta)+2
-		
-	end function GetBox
 	
 end Module ModuleFunction

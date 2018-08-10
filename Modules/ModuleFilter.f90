@@ -4,6 +4,8 @@ module ModuleFilter
 
 	implicit none
 
+	real :: pi = 3.14159265358
+	
 	real,dimension(8) :: HyperGeom1_Liep  = (/ 1.000000000000000,   1.666666666666667,   0.535714285714286,   0.070346320346320, &
 		& 0.004982864357864,   0.000220295055821, 0.000006651420768,   0.000000145798339 /)
 	real,dimension(8) :: HyperGeom2_Liep  = (/ 1.000000000000000,   0.960000000000000,   0.237037037037037,   0.026181605668785, &
@@ -26,30 +28,23 @@ module ModuleFilter
 
 	contains
 
-	function Gaussian_filter(coord,TKE,Lambda)
+	function Gaussian_filter(R,TKE,Lambda)
 
 		implicit none
 
-		real :: pi
 		real :: TKE,Lambda,R,Gaussian_filter
-		real,dimension(2) :: coord
-
-		pi = 3.14159265358
-		R = sqrt(coord(1)**2+coord(2)**2)
+		
 		Gaussian_filter = sqrt(TKE*2/pi)*exp(-pi*R**2/(2*Lambda**2))
 
 	end function Gaussian_filter
 	
 
-	function VonKarman_filter(coord,TKE,Lambda)
+	function VonKarman_filter(R,TKE,Lambda)
 
 		implicit none
 
-		real :: pi, temp
+		real :: temp
 		real :: TKE,Lambda,R,VonKarman_filter
-		real,dimension(2) :: coord
-
-		R = sqrt(coord(1)**2+coord(2)**2)
 
 		temp = R/(2*VonKarman_alpha_zeta*Lambda)
 
@@ -59,15 +54,12 @@ module ModuleFilter
 	end function VonKarman_filter
 
 
-	function Liepmann_filter(coord,TKE,Lambda)
+	function Liepmann_filter(R,TKE,Lambda)
 
 		implicit none
 
-		real :: pi, temp
+		real :: temp
 		real :: TKE,Lambda,R,Liepmann_filter
-		real,dimension(2) :: coord
-
-		R = sqrt(coord(1)**2+coord(2)**2)
 
 		temp = R/(2*Lambda)
 

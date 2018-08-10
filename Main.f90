@@ -32,7 +32,7 @@ real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
 
-character(len=:), allocatable :: File_path, FilterType
+character(len=:), allocatable :: File_path, FilterType, ScalingType
 
 integer :: Parallel_computing
 
@@ -66,6 +66,9 @@ File_path = GetStringVtkValue("cfddatafile")
 
 allocate(character(len(GetStringVtkValue("filter"))) :: FilterType)
 FilterType = GetStringVtkValue("filter")
+
+allocate(character(len(GetStringVtkValue("amplitudeScalingParticleOrGrid"))) :: ScalingType)
+ScalingType = GetStringVtkValue("amplitudeScalingParticleOrGrid")
 
 ! Mesh caracteristics
 x_min = GetRealVtkValue("x_min")
@@ -173,10 +176,10 @@ do i = 1,Nt
 
 	if (Parallel_computing == 1) then
 		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
-			& Parallel_computing,Radius,FilterType)
+			& Parallel_computing,Radius,FilterType,ScalingType)
 	else
 		call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
-			& Parallel_computing,Radius,FilterType)
+			& Parallel_computing,Radius,FilterType,ScalingType)
 	end if
 
 
