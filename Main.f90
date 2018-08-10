@@ -13,24 +13,21 @@ implicit none
 integer, parameter :: seed = 86456
 
 real :: x_min, x_max, y_min, y_max, delta, x
-real :: total_time,test, Lambda_min
-real :: testprob
-real :: start, finish
+real :: total_time, Lambda_min
 real :: dt, T, Volume
 
-integer :: nx,ny,line_no,i,j,Radius
-integer :: Nparticle, Nparticle_available, Particle_available_counter
+integer :: nx,ny,i,j,Radius,k
+integer :: Nparticle
 integer :: TimeStep,Nt
-integer :: hour, minute, seconde, k
 integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
 integer :: Get_Number_Thread
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
 
-real, allocatable :: RANS_data(:,:), X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
+real, allocatable :: X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
 real, allocatable :: StreamFunction(:,:),Lambda(:,:),Ux(:,:), Uy(:,:), dUy_x(:,:), dUx_y(:,:), Lsum_X(:,:), Lsum_Y(:,:)
-real, allocatable :: Particle(:,:), ParticleSeeder(:,:), NumberPart(:), Vorticity(:,:)
+real, allocatable :: Particle(:,:), NumberPart(:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
@@ -154,41 +151,11 @@ allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
 
+
+
 ! Initialisation particle
-allocate (ParticleSeeder(Nparticle,4))
-do i = 1,Nparticle
-	ParticleSeeder(i,1) = i
-	ParticleSeeder(i,2) = x_min + rand()*(x_max-x_min)
-	ParticleSeeder(i,3) = y_min + rand()*(y_max-y_min)
-	ParticleSeeder(i,4) = r4_normal_01 ()
-end do
+Particle = InitParticle(MeshCaracteristics,Nparticle,vtkMask)
 
-! Removing particle in airfoil
-allocate (NumberPart(Nparticle))
-
-Particle_available_counter = 0
-
-do i = 1,Nparticle
-	if (Get_value(ParticleSeeder(i,2),ParticleSeeder(i,3),MeshCaracteristics,vtkMask) == 1) then
-		NumberPart(i) = 1
-		Particle_available_counter = Particle_available_counter+1
-	end if
-end do
-
-allocate (Particle(Particle_available_counter,4))
-
-k = 1
-do i = 1,Nparticle
-	if (NumberPart(i) == 1) then
-		Particle(k,1) = ParticleSeeder(i,1)
-		Particle(k,2) = ParticleSeeder(i,2)
-		Particle(k,3) = ParticleSeeder(i,3)
-		Particle(k,4) = ParticleSeeder(i,4)
-		k = k+1
-	end if
-end do
-
-deallocate (NumberPart,ParticleSeeder)
 
 
 ! First step
@@ -202,10 +169,7 @@ do i = 1,Nt
 	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
 	
-	
-	
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-	!call WriteParticle(TimeStep,Particle)
 
 	if (Parallel_computing == 1) then
 		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
