@@ -12,7 +12,8 @@ module ModuleMath
 	end function str
 
 
-	character(len=20) function hourstr(Total_time)
+
+	character(len=9) function hourstr(Total_time)
  	
 		implicit none
 

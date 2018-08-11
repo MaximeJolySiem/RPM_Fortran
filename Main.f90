@@ -37,8 +37,6 @@ character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
 
 integer :: Parallel_computing
 
-character*10 string
-
 logical :: dir_e
 
 
@@ -87,8 +85,12 @@ ny = (y_max-y_min)/delta+1
 ! Enable parallel computing
 Parallel_computing = GetIntVtkValue("Parallel_computing")
 Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
-
-call omp_set_num_threads(Get_Number_Thread) ! set the number of threads to 8
+call omp_set_num_threads(Get_Number_Thread)
+if (Parallel_computing == 1) then
+	write(*,*) 'PARALLEL COMPUTING ENABLE'
+	write(*,*) 'NUMBER OF THREAD USED : ', str(Get_Number_Thread)
+	write(*,*) ''
+end if
 
 !Writing parameters
 write_Particle = GetIntVtkValue("write_Particle")
@@ -111,13 +113,15 @@ if (dt>T) then
 	stop " : Enter final time greater than time step"
 end if
 
-write(*,*) 'BEGINING COMPUTING'
-
 Nt = T/dt
 
 allocate (X_VELOCITY(ny,nx),Y_VELOCITY(ny,nx),TKE(ny,nx),SDR(ny,nx),Z_VORTICITY(ny,nx),vtkMask(ny,nx),Lambda(ny,nx))
-
 allocate(X_VELOCITYTemp(nx*ny),Y_VELOCITYTemp(nx*ny),TKETemp(nx*ny),SDRTemp(nx*ny),Z_VORTICITYTemp(nx*ny),vtkMaskTemp(nx*ny))
+
+
+
+write(*,*) 'READING RANS DATA'
+write(*,*) 'Number of points : ', str(nx*ny)
 
 X_VELOCITYTemp = GetVtkField('X_VELOCITY',File_path)
 Y_VELOCITYTemp = GetVtkField('Y_VELOCITY',File_path)
@@ -149,6 +153,7 @@ deallocate (X_VELOCITYTemp,Y_VELOCITYTemp,Z_VORTICITYTemp,TKETemp,SDRTemp,vtkMas
 PartSeeder = GetSeeder(X_VELOCITY, Y_VELOCITY, delta)
 
 ! Initialisation particle
+write(*,*) 'PARTICLE SEEDING INITIALIZATION'
 IsSave = GetIntVtkValue("Enable_save")
 
 if (IsSave == 1) then
@@ -156,6 +161,7 @@ if (IsSave == 1) then
 	PathSave= GetStringVtkValue("Save_path")
 	Particle = ReadParticleSave(PathSave)
 	call GetTimeStepSave(TimeStep,PathSave)
+	write(*,*) 'SAVE USED, CURRENT TIME STEP : ', str(TimeStep-1)
 else
 	! First step
 	Particle = InitParticle(MeshCaracteristics,Nparticle,vtkMask)
@@ -178,8 +184,9 @@ allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx)
 
 
 
-
-
+write(*,*) ''
+write(*,*) 'BEGINING COMPUTING'
+write(*,*) ''
 
 
 ! Moving particle, calculating the stream function for each step
@@ -306,7 +313,6 @@ do i = Init_T,Nt
 
 
 
-	print *, 'Done step number '//trim(str(TimeStep))//' over '//trim(str(Nt))
 
 
 	
@@ -319,15 +325,17 @@ do i = Init_T,Nt
 		elapsed_time = REAL(nb_ticks) / nb_ticks_sec
 		total_time = (Nt+1-Init_T)*(elapsed_time)
 		print *, 'ESTIMATION TIME NEEDED: '//hourstr(Total_time-(elapsed_time))
+		print *, ''
 	end if
 	
-	
+	print *, 'Done step number '//trim(str(TimeStep))//' over '//trim(str(Nt))
 	
 	nb_ticks = nb_ticks_final - nb_ticks_t0
     elapsed_time = REAL(nb_ticks) / nb_ticks_sec
 	
 	if (total_time-elapsed_time>0) then
-		print *, 'Time until end: '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1)-elapsed_time)
+		print *, 'Time until end: '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1)-elapsed_time)// &
+		& '. Total time estimated : '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1))
 		
 	else
 		print *, 'Time until end: '//hourstr(0.)
@@ -339,7 +347,7 @@ end do
 
 
 
-'Simulation finished.'
+print *, 'Simulation finished.'
 
 
 

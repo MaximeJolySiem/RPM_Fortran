@@ -14,7 +14,7 @@ module ModuleFunction
 
 		real :: x,y,dx,dy,dfx,dfy,dfxy,Get_value
 		real :: delta
-		integer :: i_min,i_max,j_min,j_max
+		integer :: i_min,j_min
 		real,dimension(:,:) :: Data_to_get
 		real,dimension(5) :: MeshCaracteristics
 		
@@ -22,13 +22,11 @@ module ModuleFunction
 
 
 		j_min = floor((x-MeshCaracteristics(1))/delta)+1
-		j_max = floor((x-MeshCaracteristics(1))/delta)+2
 		i_min = floor((y-MeshCaracteristics(3))/delta)+1
-		i_max = floor((y-MeshCaracteristics(3))/delta)+2
 
-		dfy = Data_to_get(i_min,j_max)-Data_to_get(i_min,j_min)
-		dfx = Data_to_get(i_max,j_min)-Data_to_get(i_min,j_min)
-		dfxy = Data_to_get(i_min,j_min)+Data_to_get(i_max,j_max)-Data_to_get(i_min,j_max)-Data_to_get(i_max,j_min)
+		dfy = Data_to_get(i_min,j_min+1)-Data_to_get(i_min,j_min)
+		dfx = Data_to_get(i_min+1,j_min)-Data_to_get(i_min,j_min)
+		dfxy = Data_to_get(i_min,j_min)+Data_to_get(i_min+1,j_min+1)-Data_to_get(i_min,j_min+1)-Data_to_get(i_min+1,j_min)
 
 		dx = x-(MeshCaracteristics(1)+(j_min-1)*delta)
 		dy = y-(MeshCaracteristics(3)+(i_min-1)*delta)
@@ -82,7 +80,7 @@ module ModuleFunction
 		real :: delta
 		integer :: Radius
 		
-		integer, dimension(4) :: GetBox !GetBox will get [i_min,i_max,j_min,j_max] then indexes of [y_min, y_max, x_min, x_max]
+		integer, dimension(4) :: GetBox 
 		real,dimension(5) :: MeshCaracteristics
 		
 		delta = MeshCaracteristics(5)
