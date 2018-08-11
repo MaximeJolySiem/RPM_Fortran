@@ -219,6 +219,7 @@ def get_entry_fields():
    text_file.write(str(bin_write.get()) + "\n")
    text_file.write(str(Save_part.get()) + "\n")
    text_file.write(ParticleFilename + "\n")
+   text_file.write(str(Set_Number_Thread.get()) + "\n")
    
    text_file.close()    
    
@@ -617,7 +618,8 @@ if(If_save == 1):
 Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+11, column=0, sticky=W)
 Set_Number_Thread = IntVar()
 Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+13, column=0, sticky=W)
-
+if(If_save == 1):
+    Set_Number_Thread.set(int(data_saved[33][0:len(data_saved[33])-1]))
 
 
 
