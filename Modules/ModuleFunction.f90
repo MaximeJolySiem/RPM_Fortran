@@ -285,6 +285,118 @@ module ModuleFunction
 
 	
 	
+
+
+
+
+
+
+	subroutine MoveParticle_opt(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
+
+		implicit none
+
+		real :: dt,x_part,y_part,ux_part,uy_part, vel_temp
+		real :: Prob_top, Prob_bot
+		real :: RandomInjector,RandomPosition,NewPosition
+		integer :: i,N,ny,ii
+		real,dimension(:,:) :: Particle, X_VELOCITY, Y_VELOCITY, PartSeeder
+		real,dimension(5) :: MeshCaracteristics
+		
+		ny = size(X_VELOCITY(:,1))
+
+
+		Prob_top = sum(abs(Y_VELOCITY(1,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
+		Prob_bot = Prob_top+sum(abs(Y_VELOCITY(ny,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
+
+
+		N = size(Particle(:,1))
+		
+		!$OMP PARALLEL DO PRIVATE(i, x_part, y_part, ux_part, uy_part, RandomInjector, RandomPosition, ii, NewPosition, vel_temp)
+		do i = 1,N
+			x_part = Particle(i,2)
+			y_part = Particle(i,3)
+			ux_part = Get_value(x_part,y_part,MeshCaracteristics,X_VELOCITY)
+			uy_part = Get_value(x_part,y_part,MeshCaracteristics,Y_VELOCITY)
+			Particle(i,2) = x_part + ux_part*dt
+			Particle(i,3) = y_part + uy_part*dt
+			
+
+			if (Particle(i,2) > MeshCaracteristics(2)) then
+				RandomInjector = rand()
+
+				if (RandomInjector<=Prob_top) then
+					RandomPosition = rand()
+					ii = 1
+					do while(PartSeeder(1,ii)<RandomPosition)
+						ii = ii + 1
+					end do
+					ii = ii-1
+					
+					NewPosition = RandomPosition/(PartSeeder(1,ii+1)-PartSeeder(1,ii)) &
+					& +ii-1/(PartSeeder(1,ii+1)-PartSeeder(1,ii))*PartSeeder(1,ii)
+					NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+					
+					vel_temp = abs(RandomPosition*(Y_VELOCITY(1,ii+1)-Y_VELOCITY(1,ii)) &
+					& +Y_VELOCITY(1,ii))
+					
+					Particle(i,2) = NewPosition
+					Particle(i,3) = MeshCaracteristics(4) - rand()*vel_temp*dt
+					Particle(i,4) = r4_normal_01 ()
+
+
+				elseif (Prob_top<RandomInjector) then
+					if (RandomInjector<=Prob_bot) then
+						RandomPosition = rand()
+						ii = 1
+						do while(PartSeeder(3,ii)<RandomPosition)
+							ii = ii + 1
+						end do
+						ii = ii-1
+						
+						NewPosition = RandomPosition/(PartSeeder(3,ii+1)-PartSeeder(3,ii)) &
+						& +ii-1/(PartSeeder(3,ii+1)-PartSeeder(3,ii))*PartSeeder(3,ii)
+						NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+						
+						vel_temp = abs(RandomPosition*(Y_VELOCITY(ny,ii+1)-Y_VELOCITY(ny,ii)) &
+						& +Y_VELOCITY(1,ii))
+									
+						Particle(i,2) = NewPosition
+						Particle(i,3) = MeshCaracteristics(3) + rand()*vel_temp*dt
+						Particle(i,4) = r4_normal_01 ()
+						
+					else
+						RandomPosition = rand()
+						ii = 1
+						do while(PartSeeder(2,ii)<RandomPosition)
+							ii = ii + 1
+						end do
+						ii = ii-1
+						
+						NewPosition = RandomPosition/(PartSeeder(2,ii+1)-PartSeeder(2,ii)) &
+						& +ii-1/(PartSeeder(2,ii+1)-PartSeeder(2,ii))*PartSeeder(2,ii)
+						NewPosition = MeshCaracteristics(3)+NewPosition*MeshCaracteristics(5)
+											
+						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
+						& +X_VELOCITY(ii,1))
+					
+						Particle(i,2) = MeshCaracteristics(1) + rand()*vel_temp*dt
+						Particle(i,3) = NewPosition
+						Particle(i,4) = r4_normal_01 ()
+					end if
+
+				end if
+
+			end if
+
+		end do
+		!$OMP END PARALLEL DO
+	end subroutine MoveParticle_opt
+
+
+
+
+
+
 	
 	
 	

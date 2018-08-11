@@ -6,12 +6,16 @@ module ModuleWrite
 
 	contains
 
-	subroutine WriteParticle(TimeStep,Particle_to_write)
+	subroutine WriteParticle(TimeStep,Particle_to_write,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: Particle_to_write
-		integer :: i,N,TimeStep
+		integer :: i,N,TimeStep,Condition
+
+		if (Condition == 0) then
+			return
+		end if
 
 		N = size(Particle_to_write(:,1))
 
@@ -25,12 +29,16 @@ module ModuleWrite
 
 	end subroutine WriteParticle
 
-	subroutine WriteBinParticle(TimeStep,Particle_to_write)
+	subroutine WriteBinParticle(TimeStep,Particle_to_write,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: Particle_to_write
-		integer :: i,N,TimeStep
+		integer :: i,N,TimeStep,Condition
+
+		if (Condition == 0) then
+			return
+		end if
 
 		N = size(Particle_to_write(:,1))
 
@@ -45,13 +53,18 @@ module ModuleWrite
 	end subroutine WriteBinParticle
 
 
-	subroutine WriteData(TimeStep,DataToWrite,FileName)
+	subroutine WriteData(TimeStep,DataToWrite,FileName,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep
+		integer :: i,j,nx,ny,TimeStep,Condition
 		character(len=*) :: FileName
+
+		if (Condition == 0) then
+			return
+		end if
+
 		nx = size(DataToWrite(1,:))
 		ny = size(DataToWrite(:,1))
 		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
@@ -66,13 +79,18 @@ module ModuleWrite
 	end subroutine WriteData
 
 
-	subroutine WriteBinData(TimeStep,DataToWrite,FileName)
+	subroutine WriteBinData(TimeStep,DataToWrite,FileName,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep
+		integer :: i,j,nx,ny,TimeStep,Condition
 		character(len=*) :: FileName
+
+		if (Condition == 0) then
+			return
+		end if
+
 		nx = size(DataToWrite(1,:))
 		ny = size(DataToWrite(:,1))
 		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")

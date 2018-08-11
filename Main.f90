@@ -180,60 +180,119 @@ do i = Init_T,Nt
 	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
 	
-	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-
 	if (Parallel_computing == 1) then
+		call MoveParticle_opt(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
 			& Parallel_computing,Radius,FilterType,ScalingType)
 	else
+		call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 		call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
 			& Parallel_computing,Radius,FilterType,ScalingType)
 	end if
 
 
+
+
 	StreamFunction = StreamFunction*Volume
-	call der2_x(Uy, StreamFunction, vtkMask, MeshCaracteristics) 
-	Uy = -Uy !Uy = -dpsi/dx
-	call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
-	call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
-	call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
+	if (Parallel_computing == 1) then
+		!$OMP SECTIONS
+		!$OMP SECTION
+		call der2_x(Uy, -StreamFunction, vtkMask, MeshCaracteristics) !Uy = -dpsi/dx
+		!$OMP SECTION
+		call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
+		!$OMP END SECTIONS
+
+		!$OMP SECTIONS
+		!$OMP SECTION
+		call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
+		!$OMP SECTION
+		call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
+		!$OMP END SECTIONS
+	else
+		call der2_x(Uy, -StreamFunction, vtkMask, MeshCaracteristics) !Uy = -dpsi/dx
+		call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
+		call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
+		call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
+	end if
 	Vorticity = dUy_x-dUx_y
 	Lsum_X = Y_VELOCITY*Vorticity + Uy*Z_VORTICITY
 	Lsum_Y = -X_VELOCITY*Vorticity - Ux*Z_VORTICITY
 
 
-	if (write_binary_format == 0) then
-		if (write_Particle == 1) then
-			call WriteParticle(TimeStep,Particle)
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (Parallel_computing == 1) then
+		if (write_binary_format == 0) then
+			!$OMP SECTIONS
+			!$OMP SECTION
+			call WriteParticle(TimeStep,Particle,write_Particle)
+			!$OMP SECTION
+			call WriteData(TimeStep,Ux,'Vel_X',write_Vel)
+			!$OMP SECTION
+			call WriteData(TimeStep,Uy,'Vel_Y',write_Vel)
+			!$OMP SECTION
+			call WriteData(TimeStep,Vorticity,'Vor_Z',write_Vor)
+			!$OMP SECTION
+			call WriteData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
+			!$OMP SECTION
+			call WriteData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			!$OMP END SECTIONS
+
+		else
+			!$OMP SECTIONS
+			!$OMP SECTION
+			call WriteBinParticle(TimeStep,Particle,write_Particle)
+			!$OMP SECTION
+			call WriteBinData(TimeStep,Ux,'Vel_X',write_Vel)
+			!$OMP SECTION
+			call WriteBinData(TimeStep,Uy,'Vel_Y',write_Vel)	
+			!$OMP SECTION
+			call WriteBinData(TimeStep,Vorticity,'Vor_Z',write_Vor)
+			!$OMP SECTION
+			call WriteBinData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
+			!$OMP SECTION
+			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			!$OMP END SECTIONS
 		end if
-		if (write_Vel == 1) then
-			call WriteData(TimeStep,Ux,'Vel_X')
-			call WriteData(TimeStep,Uy,'Vel_Y')
-		end if
-		if (write_Vor == 1) then
-			call WriteData(TimeStep,Vorticity,'Vor_Z')
-		end if
-		if (write_Lsum == 1) then
-			call WriteData(TimeStep,Lsum_X,'Lsum_X')
-			call WriteData(TimeStep,Lsum_Y,'Lsum_Y')
-		end if
+
 	else
-		if (write_Particle == 1) then
-			call WriteBinParticle(TimeStep,Particle)
+		if (write_binary_format == 0) then
+			call WriteParticle(TimeStep,Particle,write_Particle)
+			call WriteData(TimeStep,Ux,'Vel_X',write_Vel)
+			call WriteData(TimeStep,Uy,'Vel_Y',write_Vel)
+			call WriteData(TimeStep,Vorticity,'Vor_Z',write_Vor)
+			call WriteData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
+			call WriteData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+
+		else
+			call WriteBinParticle(TimeStep,Particle,write_Particle)
+			call WriteBinData(TimeStep,Ux,'Vel_X',write_Vel)
+			call WriteBinData(TimeStep,Uy,'Vel_Y',write_Vel)	
+			call WriteBinData(TimeStep,Vorticity,'Vor_Z',write_Vor)
+			call WriteBinData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
+			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+		
 		end if
-		if (write_Vel == 1) then
-			call WriteBinData(TimeStep,Ux,'Vel_X')
-			call WriteBinData(TimeStep,Uy,'Vel_Y')
-		end if
-		if (write_Vor == 1) then
-			call WriteBinData(TimeStep,Vorticity,'Vor_Z')
-		end if
-		if (write_Lsum == 1) then
-			call WriteBinData(TimeStep,Lsum_X,'Lsum_X')
-			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y')
-		end if
-	end if
-	
+	end if		
+
+
+
+
+
+
+
+
 
 	
 	
@@ -262,6 +321,10 @@ do i = Init_T,Nt
 	
 	TimeStep = TimeStep+1
 end do
+
+
+
+
 
 
 
