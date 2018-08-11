@@ -430,16 +430,14 @@ module ModuleFunction
 		N_particle = size(Particle(:,1))
 		
 		
-		
-		
 		if (FilterType == "Gaussian") then
 
 			if (ScalingType == "Particle") then
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -453,8 +451,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -477,8 +475,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -492,8 +490,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -516,8 +514,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -531,8 +529,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -599,8 +597,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -616,8 +614,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -641,8 +639,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -658,8 +656,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -684,8 +682,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)
@@ -701,8 +699,8 @@ module ModuleFunction
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,2),Particle(k,3),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,2),Particle(k,3),Lambda_part,MeshCaracteristics,Radius)
-					do i = Box(1), Box(2)
-						do j = Box(3), Box(4)
+					do j = Box(3), Box(4)
+						do i = Box(1), Box(2)
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,2))**2 + (y_grid-Particle(k,3))**2)

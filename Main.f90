@@ -131,8 +131,8 @@ SDRTemp = GetVtkField('SDR',File_path)
 vtkMaskTemp = GetVtkField('vtkValidPointMask',File_path)
 
 
-do i = 1,ny
-	do j = 1,nx
+do j = 1,nx
+	do i = 1,ny
 		X_VELOCITY(i,j) = X_VELOCITYTemp(j+(i-1)*nx)
 		Y_VELOCITY(i,j) = Y_VELOCITYTemp(j+(i-1)*nx)
 		TKE(i,j) = TKETemp(j+(i-1)*nx)
@@ -178,6 +178,17 @@ allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
+
+
+
+
+
+
+
+
+
+
+
 
 
 
