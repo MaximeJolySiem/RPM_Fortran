@@ -37,9 +37,7 @@ character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
 
 integer :: Parallel_computing
 
-character*10 string, format
-
-data format /'(F10.2)'/
+character*10 string
 
 logical :: dir_e
 
@@ -175,11 +173,28 @@ allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
 
+
+
+
+
+
+
+
+
+
 ! Moving particle, calculating the stream function for each step
 do i = Init_T,Nt
+
+
+
 	CALL SYSTEM_CLOCK(COUNT_RATE=nb_ticks_sec, COUNT_MAX=nb_ticks_max)
 	CALL SYSTEM_CLOCK(COUNT=nb_ticks_initial)
 	
+
+
+
+
+
 	if (Parallel_computing == 1) then
 		call MoveParticle_opt(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
@@ -291,7 +306,7 @@ do i = Init_T,Nt
 
 
 
-
+	print *, 'Done step number '//trim(str(TimeStep))//' over '//trim(str(Nt))
 
 
 	
@@ -306,13 +321,13 @@ do i = Init_T,Nt
 		print *, 'ESTIMATION TIME NEEDED: '//hourstr(Total_time-(elapsed_time))
 	end if
 	
-	print *, 'Done step number '//trim(str(TimeStep))//' over '//trim(str(Nt))
+	
 	
 	nb_ticks = nb_ticks_final - nb_ticks_t0
     elapsed_time = REAL(nb_ticks) / nb_ticks_sec
 	
 	if (total_time-elapsed_time>0) then
-		print *, 'Time until end: '//hourstr(Total_time-elapsed_time)
+		print *, 'Time until end: '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1)-elapsed_time)
 		
 	else
 		print *, 'Time until end: '//hourstr(0.)
@@ -324,7 +339,7 @@ end do
 
 
 
-
+'Simulation finished.'
 
 
 
