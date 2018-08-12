@@ -31,7 +31,7 @@ module ModuleFunction
 		dx = x-(MeshCaracteristics(1)+(j_min-1)*delta)
 		dy = y-(MeshCaracteristics(3)+(i_min-1)*delta)
 
-		Get_value = dfx*dx/delta + dfy*dy/delta + dfxy*dx*dy/delta + Data_to_get(i_min,j_min)
+		Get_value = (dfx*dx + dfy*dy + dfxy*dx*dy)/delta + Data_to_get(i_min,j_min)
 
 	end function Get_value
 

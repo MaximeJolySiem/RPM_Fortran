@@ -354,19 +354,27 @@ def EstimateMemory():
    dt = float(Acoustic_Time_Step.get())
    T = float(Final_time.get())
    Nt = int(round(T/dt))
-   Nb_variable = 0
-   if Vel_write.get() == 1:
-      Nb_variable = Nb_variable+2
-   if Vor_write.get() == 1:
-      Nb_variable = Nb_variable+1
-   if Lsum_write.get() == 1:
-      Nb_variable = Nb_variable+2
    nx = int(round((x_max-x_min+Delta)/Delta))
    ny = int(round((y_max-y_min+Delta)/Delta))
+   Nb_variable = 0
+   Memory_estimation = 0
+   
    if (bin_write.get() == 1):
-       Memory_estimation = Nb_variable*nx*ny*12*Nt
+       if Vel_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*16*Nt
+       if Vor_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*12*Nt
+       if Lsum_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*16*Nt
    else:
-       Memory_estimation = Nb_variable*nx*ny*18*Nt
+       if Vel_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*35*Nt
+       if Vor_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*18*Nt
+       if Lsum_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*35*Nt
+       
+       
    if Part_write.get() == 1:
       if (bin_write.get() == 1):
           Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*12*Nt

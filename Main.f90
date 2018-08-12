@@ -28,6 +28,7 @@ REAL :: elapsed_time  ! real time in seconds
 
 real, allocatable :: X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
 real, allocatable :: StreamFunction(:,:),Lambda(:,:),Ux(:,:), Uy(:,:), dUy_x(:,:), dUx_y(:,:), Lsum_X(:,:), Lsum_Y(:,:)
+real, allocatable :: Lsum(:,:), Vorticity_write(:,:), Velocity(:,:)
 real, allocatable :: Particle(:,:), NumberPart(:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
@@ -178,7 +179,7 @@ allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
-
+allocate (Velocity(ny*nx,2),Vorticity_write(ny*nx,1),Lsum(nx*ny,2))
 
 
 
@@ -251,6 +252,11 @@ do i = Init_T,Nt
 	Lsum_X = Y_VELOCITY*Vorticity + Uy*Z_VORTICITY
 	Lsum_Y = -X_VELOCITY*Vorticity - Ux*Z_VORTICITY
 
+	Velocity(:,1) = reshape(transpose(Ux),(/nx*ny/))
+	Velocity(:,2) = reshape(transpose(Uy),(/nx*ny/))
+	Vorticity_write(:,1) = reshape(transpose(Vorticity),(/nx*ny/))
+	Lsum(:,1) = reshape(transpose(Lsum_X),(/nx*ny/))
+	Lsum(:,2) = reshape(transpose(Lsum_Y),(/nx*ny/))
 
 
 
@@ -271,15 +277,11 @@ do i = Init_T,Nt
 			!$OMP SECTION
 			call WriteParticle(TimeStep,Particle,write_Particle)
 			!$OMP SECTION
-			call WriteData(TimeStep,Ux,'Vel_X',write_Vel)
+			call WriteData(TimeStep,Velocity,'Vel',write_Vel)
 			!$OMP SECTION
-			call WriteData(TimeStep,Uy,'Vel_Y',write_Vel)
+			call WriteData(TimeStep,Vorticity_write,'Vor',write_Vor)
 			!$OMP SECTION
-			call WriteData(TimeStep,Vorticity,'Vor_Z',write_Vor)
-			!$OMP SECTION
-			call WriteData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
-			!$OMP SECTION
-			call WriteData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			call WriteData(TimeStep,Lsum,'Lsum',write_Lsum)
 			!$OMP END SECTIONS
 
 		else
@@ -287,34 +289,26 @@ do i = Init_T,Nt
 			!$OMP SECTION
 			call WriteBinParticle(TimeStep,Particle,write_Particle)
 			!$OMP SECTION
-			call WriteBinData(TimeStep,Ux,'Vel_X',write_Vel)
+			call WriteBinData(TimeStep,Velocity,'Vel',write_Vel)	
 			!$OMP SECTION
-			call WriteBinData(TimeStep,Uy,'Vel_Y',write_Vel)	
+			call WriteBinData(TimeStep,Vorticity_write,'Vor',write_Vor)
 			!$OMP SECTION
-			call WriteBinData(TimeStep,Vorticity,'Vor_Z',write_Vor)
-			!$OMP SECTION
-			call WriteBinData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
-			!$OMP SECTION
-			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			call WriteBinData(TimeStep,Lsum,'Lsum',write_Lsum)
 			!$OMP END SECTIONS
 		end if
 
 	else
 		if (write_binary_format == 0) then
 			call WriteParticle(TimeStep,Particle,write_Particle)
-			call WriteData(TimeStep,Ux,'Vel_X',write_Vel)
-			call WriteData(TimeStep,Uy,'Vel_Y',write_Vel)
-			call WriteData(TimeStep,Vorticity,'Vor_Z',write_Vor)
-			call WriteData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
-			call WriteData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			call WriteData(TimeStep,Velocity,'Vel',write_Vel)
+			call WriteData(TimeStep,Vorticity_write,'Vor',write_Vor)
+			call WriteData(TimeStep,Lsum,'Lsum',write_Lsum)
 
 		else
 			call WriteBinParticle(TimeStep,Particle,write_Particle)
-			call WriteBinData(TimeStep,Ux,'Vel_X',write_Vel)
-			call WriteBinData(TimeStep,Uy,'Vel_Y',write_Vel)	
-			call WriteBinData(TimeStep,Vorticity,'Vor_Z',write_Vor)
-			call WriteBinData(TimeStep,Lsum_X,'Lsum_X',write_Lsum)
-			call WriteBinData(TimeStep,Lsum_Y,'Lsum_Y',write_Lsum)
+			call WriteBinData(TimeStep,Velocity,'Vel',write_Vel)	
+			call WriteBinData(TimeStep,Vorticity_write,'Vor',write_Vor)
+			call WriteBinData(TimeStep,Lsum,'Lsum',write_Lsum)
 		
 		end if
 	end if		

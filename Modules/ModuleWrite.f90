@@ -53,25 +53,25 @@ module ModuleWrite
 	end subroutine WriteBinParticle
 
 
+
+
 	subroutine WriteData(TimeStep,DataToWrite,FileName,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep,Condition
+		integer :: i,j,N,TimeStep,Condition
 		character(len=*) :: FileName
 
 		if (Condition == 0) then
 			return
 		end if
 
-		nx = size(DataToWrite(1,:))
-		ny = size(DataToWrite(:,1))
+		N = size(DataToWrite(:,1))
+
 		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
-		DO i = 1,ny
-			DO j = 1,nx
-				write(9,*) DataToWrite(i,j)
-	    	END DO
+		DO i = 1,N
+			write(9,*) DataToWrite(i,:)
     	END DO
 
     	close(9)
@@ -79,30 +79,30 @@ module ModuleWrite
 	end subroutine WriteData
 
 
+
+
 	subroutine WriteBinData(TimeStep,DataToWrite,FileName,Condition)
 
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,nx,ny,TimeStep,Condition
+		integer :: i,j,N,TimeStep,Condition
 		character(len=*) :: FileName
 
 		if (Condition == 0) then
 			return
 		end if
 
-		nx = size(DataToWrite(1,:))
-		ny = size(DataToWrite(:,1))
+		N = size(DataToWrite(:,1))
+
 		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
-		DO i = 1,ny
-			DO j = 1,nx
-				write(9) DataToWrite(i,j)
-	    	END DO
+		DO i = 1,N
+			write(9) DataToWrite(i,:)
     	END DO
 
     	close(9)
 
 	end subroutine WriteBinData
-	
+
 	
 end Module ModuleWrite
