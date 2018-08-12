@@ -69,6 +69,8 @@ module ModuleFunction
 		GetSeeder(2,:) = GetSeeder(2,:)/MAXVAL(GetSeeder(2,:))
 		GetSeeder(3,:) = GetSeeder(3,:)/MAXVAL(GetSeeder(3,:))
 
+		deallocate(Vx_left, Vy_bot, Vy_top)
+
 	end function GetSeeder
 
 	
