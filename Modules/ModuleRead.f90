@@ -220,7 +220,7 @@ module ModuleRead
 
 		10 close(3)
 
-		allocate(ReadParticleSave(count,4))
+		allocate(ReadParticleSave(count,3))
 
 
 		if (extension == "bin") then

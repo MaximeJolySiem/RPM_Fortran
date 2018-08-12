@@ -338,7 +338,7 @@ do i = Init_T,Nt
 	nb_ticks = nb_ticks_final - nb_ticks_t0
     elapsed_time = REAL(nb_ticks) / nb_ticks_sec
 	
-	if (total_time-elapsed_time>0) then
+	if (elapsed_time*(Nt-Init_T+1)/(i-Init_T+1)-elapsed_time>0) then
 		print *, 'Time until end: '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1)-elapsed_time)// &
 		& '. Total time estimated : '//hourstr(elapsed_time*(Nt-Init_T+1)/(i-Init_T+1))
 		

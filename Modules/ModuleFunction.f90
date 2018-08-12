@@ -595,12 +595,10 @@ module ModuleFunction
 		N_particle = size(Particle(:,1))
 		
 		
-		
-		
 		if (FilterType == "Gaussian") then
 
 			if (ScalingType == "Particle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
@@ -617,7 +615,7 @@ module ModuleFunction
 				!$OMP END PARALLEL DO
 
 			elseif (ScalingType == "kGrid_lambdaParticle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
@@ -641,7 +639,7 @@ module ModuleFunction
 		else if (FilterType == "VonKarman") then
 
 			if (ScalingType == "Particle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
@@ -658,7 +656,7 @@ module ModuleFunction
 				!$OMP END PARALLEL DO
 
 			elseif (ScalingType == "kGrid_lambdaParticle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
@@ -683,7 +681,7 @@ module ModuleFunction
 		else if (FilterType == "Liepmann") then
 
 			if (ScalingType == "Particle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
@@ -700,7 +698,7 @@ module ModuleFunction
 				!$OMP END PARALLEL DO
 
 			elseif (ScalingType == "kGrid_lambdaParticle") then
-				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, TKE_grid)
+				!$OMP PARALLEL DO reduction(+:temp) PRIVATE(Lambda_part, Box, i, j, x_grid, y_grid, R, k)
 				do k = 1, N_particle
 					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
 					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
