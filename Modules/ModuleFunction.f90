@@ -416,6 +416,7 @@ module ModuleFunction
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
 		real, dimension(5) :: MeshCaracteristics
 		integer, dimension(4) :: Box
+		real :: pi = 3.14159265358
 
 		character(len=*) :: FilterType, ScalingType
 
@@ -456,8 +457,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + Gaussian_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -495,8 +495,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + VonKarman_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -534,8 +533,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + Liepmann_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -544,9 +542,17 @@ module ModuleFunction
 				stop 0		
 			end if
 		end if
-
-		StreamFunction = temp
-		deallocate (temp)
+		if (ScalingType == "kGrid_lambdaParticle") then
+			if (FilterType == "Gaussian") then
+				StreamFunction = temp*sqrt(TKE*2/pi)
+			elseif (FilterType == "VonKarman") then
+				StreamFunction = temp*sqrt(TKE)
+			else
+				StreamFunction = temp*sqrt(TKE*2/3)
+			end if
+		else
+			StreamFunction = temp
+		end if
 
 	end subroutine Calc_Fluctuation
 
@@ -574,6 +580,7 @@ module ModuleFunction
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
 		real, dimension(5) :: MeshCaracteristics
 		integer, dimension(4) :: Box
+		real :: pi = 3.14159265358
 
 		character(len=*) :: FilterType, ScalingType
 
@@ -619,8 +626,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + Gaussian_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -661,8 +667,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + VonKarman_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -704,8 +709,7 @@ module ModuleFunction
 							x_grid = MeshCaracteristics(1) + (j-1)*delta
 							y_grid = MeshCaracteristics(3) + (i-1)*delta
 							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = TKE(i,j)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
+							temp(i,j) = temp(i,j) + Liepmann_filter_grid(R,Lambda_part)*Particle(k,3)
 						end do
 					end do
 				end do	
@@ -717,7 +721,17 @@ module ModuleFunction
 
 		end if
 
-		StreamFunction = temp
+		if (ScalingType == "kGrid_lambdaParticle") then
+			if (FilterType == "Gaussian") then
+				StreamFunction = temp*sqrt(TKE*2/pi)
+			elseif (FilterType == "VonKarman") then
+				StreamFunction = temp*sqrt(TKE)
+			else
+				StreamFunction = temp*sqrt(TKE*2/3)
+			end if
+		else
+			StreamFunction = temp
+		end if
 		deallocate (temp)
 
 	end subroutine Calc_Fluctuation_opt

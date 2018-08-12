@@ -39,6 +39,18 @@ module ModuleFilter
 	end function Gaussian_filter
 	
 
+
+	function Gaussian_filter_grid(R,Lambda)
+
+		implicit none
+
+		real :: Lambda,R,Gaussian_filter_grid
+		
+		Gaussian_filter_grid = exp(-pi*R**2/(2*Lambda**2))
+
+	end function Gaussian_filter_grid	
+
+
 	function VonKarman_filter(R,TKE,Lambda)
 
 		implicit none
@@ -52,6 +64,22 @@ module ModuleFilter
 						   & - VonKarman_C*temp**(1./3.)*EvalPoly(HyperGeom2_VK,temp**2))
 
 	end function VonKarman_filter
+
+
+	function VonKarman_filter_grid(R,Lambda)
+
+		implicit none
+
+		real :: temp
+		real :: Lambda,R,VonKarman_filter_grid
+
+		temp = R/(2*VonKarman_alpha_zeta*Lambda)
+
+		VonKarman_filter_grid = VonKarman_constante_factor*(VonKarman_B*EvalPoly(HyperGeom1_VK,temp**2) &
+						   & - VonKarman_C*temp**(1./3.)*EvalPoly(HyperGeom2_VK,temp**2))
+
+	end function VonKarman_filter_grid
+
 
 
 	function Liepmann_filter(R,TKE,Lambda)
@@ -69,5 +97,18 @@ module ModuleFilter
 	end function Liepmann_filter
 
 
+	function Liepmann_filter_grid(R,Lambda)
+
+		implicit none
+
+		real :: temp
+		real :: Lambda,R,Liepmann_filter_grid
+
+		temp = R/(2*Lambda)
+
+		Liepmann_filter_grid = Liepmann_A*(Liepmann_B*EvalPoly(HyperGeom1_Liep,temp**2) &
+						   & - Liepmann_C*sqrt(4*temp)*EvalPoly(HyperGeom2_Liep,temp**2))
+
+	end function Liepmann_filter_grid
 
 end Module ModuleFilter
