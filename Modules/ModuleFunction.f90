@@ -17,7 +17,7 @@ module ModuleFunction
 		integer :: i_min,j_min
 		real,dimension(:,:) :: Data_to_get
 		real,dimension(5) :: MeshCaracteristics
-		
+
 		delta = MeshCaracteristics(5)
 
 
@@ -93,16 +93,16 @@ module ModuleFunction
 		
 		
 		if (x_min < MeshCaracteristics(1)) then
-			x_min = MeshCaracteristics(1)+1e-12
+			x_min = MeshCaracteristics(1)+1e-6
 		end if
 		if (x_max > MeshCaracteristics(2)) then
-			x_max = MeshCaracteristics(2)-1e-12
+			x_max = MeshCaracteristics(2)-1e-6
 		end if
 		if (y_min < MeshCaracteristics(3)) then
-			y_min = MeshCaracteristics(3)+1e-12
+			y_min = MeshCaracteristics(3)+1e-6
 		end if
 		if (y_max > MeshCaracteristics(4)) then
-			y_max = MeshCaracteristics(4)-1e-12
+			y_max = MeshCaracteristics(4)-1e-6
 		end if
 		
 		GetBox(1) = floor((y_min-MeshCaracteristics(3))/delta)+1
@@ -332,7 +332,7 @@ module ModuleFunction
 					
 					NewPosition = RandomPosition/(PartSeeder(1,ii+1)-PartSeeder(1,ii)) &
 					& +ii-1/(PartSeeder(1,ii+1)-PartSeeder(1,ii))*PartSeeder(1,ii)
-					NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+					NewPosition = MeshCaracteristics(1)+(NewPosition-1)*MeshCaracteristics(5)
 					
 					vel_temp = abs(RandomPosition*(Y_VELOCITY(1,ii+1)-Y_VELOCITY(1,ii)) &
 					& +Y_VELOCITY(1,ii))
@@ -353,7 +353,7 @@ module ModuleFunction
 						
 						NewPosition = RandomPosition/(PartSeeder(3,ii+1)-PartSeeder(3,ii)) &
 						& +ii-1/(PartSeeder(3,ii+1)-PartSeeder(3,ii))*PartSeeder(3,ii)
-						NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
+						NewPosition = MeshCaracteristics(1)+(NewPosition-1)*MeshCaracteristics(5)
 						
 						vel_temp = abs(RandomPosition*(Y_VELOCITY(ny,ii+1)-Y_VELOCITY(ny,ii)) &
 						& +Y_VELOCITY(1,ii))
@@ -372,7 +372,7 @@ module ModuleFunction
 						
 						NewPosition = RandomPosition/(PartSeeder(2,ii+1)-PartSeeder(2,ii)) &
 						& +ii-1/(PartSeeder(2,ii+1)-PartSeeder(2,ii))*PartSeeder(2,ii)
-						NewPosition = MeshCaracteristics(3)+NewPosition*MeshCaracteristics(5)
+						NewPosition = MeshCaracteristics(3)+(NewPosition-1)*MeshCaracteristics(5)
 											
 						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
 						& +X_VELOCITY(ii,1))
@@ -591,7 +591,6 @@ module ModuleFunction
 		ny = size(TKE(:,1))
 		allocate (temp(ny,nx))
 		temp = 0
-		
 		N_particle = size(Particle(:,1))
 		
 		

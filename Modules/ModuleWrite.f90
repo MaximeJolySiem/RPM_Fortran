@@ -104,5 +104,68 @@ module ModuleWrite
 
 	end subroutine WriteBinData
 
+
+
+	subroutine WriteFourier(DataToWrite,FileName,Condition)
+
+		implicit none
+
+		complex,dimension(:,:,:) :: DataToWrite
+		integer :: i,j,N,Condition,Number_freq
+		character(len=*) :: FileName
+
+		if (Condition == 0) then
+			return
+		end if
+
+		Number_freq = size(DataToWrite(1,1,:))
+
+
+		OPEN(9, FILE='Output/'//FileName//'X'//'.csv', ACTION="write", STATUS="replace")
+		DO i = 1,Number_freq
+			write(9,*) DataToWrite(:,1,i)
+    	END DO
+    	close(9)
+
+		OPEN(10, FILE='Output/'//FileName//'Y'//'.csv', ACTION="write", STATUS="replace")
+		DO i = 1,Number_freq
+			write(10,*) DataToWrite(:,1,i)
+    	END DO
+    	close(10)
+
+	end subroutine WriteFourier
+
+
+
+
+	subroutine WriteBinFourier(DataToWrite,FileName,Condition)
+
+		implicit none
+
+		complex,dimension(:,:,:) :: DataToWrite
+		integer :: i,j,N,Condition,Number_freq
+		character(len=*) :: FileName
+
+		if (Condition == 0) then
+			return
+		end if
+
+		Number_freq = size(DataToWrite(1,1,:))
+
+
+		OPEN(9, FILE='Output/'//FileName//'X'//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		DO i = 1,Number_freq
+			write(9) DataToWrite(:,1,i)
+    	END DO
+    	close(9)
+
+		OPEN(10, FILE='Output/'//FileName//'Y'//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		DO i = 1,Number_freq
+			write(10) DataToWrite(:,1,i)
+    	END DO
+    	close(10)
+
+	end subroutine WriteBinFourier
+
 	
 end Module ModuleWrite

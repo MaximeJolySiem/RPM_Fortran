@@ -15,13 +15,17 @@ integer, parameter :: seed = 86456
 real :: x_min, x_max, y_min, y_max, delta, x
 real :: total_time, Lambda_min
 real :: dt, T, Volume
+real :: pi = 3.14159265358
 
-integer :: nx,ny,i,j,Radius,k
+complex :: i1 = (0,-1)
+
+integer :: nx,ny,i,j,Radius,k,ii
 integer :: Nparticle
 integer :: TimeStep,Nt,Init_T
-integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
+integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format, write_fourier
 integer :: IsSave
 integer :: Get_Number_Thread
+integer :: Number_freq
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
@@ -33,6 +37,8 @@ real, allocatable :: Particle(:,:), NumberPart(:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
+
+complex, allocatable :: L_fourier(:,:,:)
 
 character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
 
@@ -109,6 +115,8 @@ Radius = GetIntVtkValue("Rconst")
 ! Time caracteristics
 dt = GetRealVtkValue("viz_interval")
 T = GetRealVtkValue("end_time")
+write_fourier = GetRealVtkValue("write_fourier")
+Number_freq = GetIntVtkValue("Number_freq")
 
 if (dt>T) then
 	stop " : Enter final time greater than time step"
@@ -173,14 +181,14 @@ end if
 
 Init_T = TimeStep
 
-
+Number_freq = 10
 ! Initializing output datas
 allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
 allocate (Uy(ny,nx))
 allocate (dUy_x(ny,nx),dUx_y(ny,nx),Lsum_X(ny,nx),Lsum_Y(ny,nx),Vorticity(ny,nx))
 allocate (Velocity(ny*nx,2),Vorticity_write(ny*nx,1),Lsum(nx*ny,2))
-
+allocate (L_fourier(nx*ny,2,Number_freq))
 
 
 
@@ -259,7 +267,12 @@ do i = Init_T,Nt
 	Lsum(:,2) = reshape(transpose(Lsum_Y),(/nx*ny/))
 
 
-
+	!!$OMP PARALLEL DO PRIVATE(ii)
+	!do ii = 0,Number_freq-1
+	!	L_fourier(:,1,ii) = L_fourier(:,1,ii) + Lsum(:,1)*exp(2*i1*pi*ii/Nt)*dt
+	!	L_fourier(:,2,ii) = L_fourier(:,2,ii) + Lsum(:,2)*exp(2*i1*pi*ii/Nt)*dt
+	!end do
+	!!$OMP END PARALLEL DO
 
 
 
@@ -351,6 +364,9 @@ do i = Init_T,Nt
 end do
 
 
+write(*,*) "WRITING FREQUENCY DATA"
+
+call WriteFourier(L_fourier,'fw_lamb_',write_fourier)
 
 print *, 'Simulation finished.'
 

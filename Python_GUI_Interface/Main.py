@@ -164,6 +164,8 @@ def get_entry_fields():
    text_file.write("write_Vor=" + str(Vor_write.get()) + "\n")
    text_file.write("write_Lsum=" + str(Lsum_write.get()) + "\n")
    text_file.write("write_binary_format=" + str(bin_write.get()) + "\n")
+   text_file.write("write_fourier=" + str(fourier_write.get()) + "\n")
+   text_file.write("Number_freq=" + str(int(Set_freq.get()*float(Final_time.get()))) + "\n")
 
    text_file.write("\n") 
    text_file.write("[Save]\n")
@@ -220,6 +222,7 @@ def get_entry_fields():
    text_file.write(str(Save_part.get()) + "\n")
    text_file.write(ParticleFilename + "\n")
    text_file.write(str(Set_Number_Thread.get()) + "\n")
+   text_file.write(str(fourier_write.get()) + "\n")
    
    text_file.close()    
    
@@ -566,9 +569,20 @@ if(If_save == 1):
 else:
     Lsum_write.set(0)
 
-ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=6,column=3, sticky=W)
+fourier_write = IntVar()
+Checkbutton(Mafenetre, text="Fourier transform", variable=fourier_write).grid(row=6, column = 3, sticky=W)
+if(If_save == 1):
+    fourier_write.set(int(data_saved[34][0:len(data_saved[34])-1]))
+else:
+    fourier_write.set(0)
+
+Label(Mafenetre, text="Choose maximal frequency : ").grid(row=7, column=3, sticky=W)
+Set_freq = IntVar()
+Frequency_scale = Scale(Mafenetre, from_=0, to=1/float(Acoustic_Time_Step.get()), resolution=10/float(Final_time.get()), length=200, orient=HORIZONTAL, variable = Set_freq).grid(row=8, column=3, sticky=W)
+
+ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=9,column=3, sticky=W)
 Memory_string_var = StringVar(value="")
-depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=6,column=3, padx = 130) 
+depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=9,column=3, padx = 130) 
 
 
 
@@ -580,7 +594,7 @@ depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=6,colum
 
 
 
-Line_second_part = 8
+Line_second_part = 10
 
 
 Label(Mafenetre, text="Evaluation parameters", font='Helvetica 18 bold').grid(row=Line_second_part, column=0, sticky=W)
