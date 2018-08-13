@@ -120,7 +120,6 @@ module ModuleWrite
 
 		Number_freq = size(DataToWrite(1,1,:))
 
-
 		OPEN(9, FILE='Output/'//FileName//'X'//'.csv', ACTION="write", STATUS="replace")
 		DO i = 1,Number_freq
 			write(9,*) DataToWrite(:,1,i)

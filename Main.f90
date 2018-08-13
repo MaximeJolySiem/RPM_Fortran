@@ -181,7 +181,6 @@ end if
 
 Init_T = TimeStep
 
-Number_freq = 10
 ! Initializing output datas
 allocate (StreamFunction(ny,nx))
 allocate (Ux(ny,nx))
@@ -193,6 +192,7 @@ allocate (L_fourier(nx*ny,2,Number_freq))
 
 
 
+print *, Number_freq
 
 
 
@@ -267,12 +267,12 @@ do i = Init_T,Nt
 	Lsum(:,2) = reshape(transpose(Lsum_Y),(/nx*ny/))
 
 
-	!!$OMP PARALLEL DO PRIVATE(ii)
-	!do ii = 0,Number_freq-1
-	!	L_fourier(:,1,ii) = L_fourier(:,1,ii) + Lsum(:,1)*exp(2*i1*pi*ii/Nt)*dt
-	!	L_fourier(:,2,ii) = L_fourier(:,2,ii) + Lsum(:,2)*exp(2*i1*pi*ii/Nt)*dt
-	!end do
-	!!$OMP END PARALLEL DO
+	!$OMP PARALLEL DO PRIVATE(ii)
+	do ii = 0,Number_freq-1
+		L_fourier(:,1,ii) = L_fourier(:,1,ii) + Lsum(:,1)*exp(2*i1*pi*ii/Nt)*dt
+		L_fourier(:,2,ii) = L_fourier(:,2,ii) + Lsum(:,2)*exp(2*i1*pi*ii/Nt)*dt
+	end do
+	!$OMP END PARALLEL DO
 
 
 
