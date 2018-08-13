@@ -576,9 +576,22 @@ if(If_save == 1):
 else:
     fourier_write.set(0)
 
+
+
+
 Label(Mafenetre, text="Choose maximal frequency : ").grid(row=7, column=3, sticky=W)
 Set_freq = IntVar()
-Frequency_scale = Scale(Mafenetre, from_=0, to=1/float(Acoustic_Time_Step.get()), resolution=10/float(Final_time.get()), length=200, orient=HORIZONTAL, variable = Set_freq).grid(row=8, column=3, sticky=W)
+
+Freq_link = Entry(Mafenetre, textvariable=Set_freq)
+scalefreq = Scale(Mafenetre, from_=0, to=1/float(Acoustic_Time_Step.get()), resolution=1/float(Final_time.get()), length=100, orient=HORIZONTAL, variable = Set_freq)
+scalefreq.grid(row=8, column=3, sticky=W)
+
+Freq_link.bind("<Return>", lambda event: scalefreq.set(Set_freq.get()))
+Freq_link.config(width=5)
+Freq_link.grid(row=8, column=3, sticky=W,padx = 120)
+
+
+
 
 ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=9,column=3, sticky=W)
 Memory_string_var = StringVar(value="")
