@@ -368,8 +368,11 @@ def EstimateMemory():
    Nt = int(round(T/dt))
    nx = int(round((x_max-x_min+Delta)/Delta))
    ny = int(round((y_max-y_min+Delta)/Delta))
-   Freq_max = int(float(Freq_link.get()))   
-   if Freq_max > T/(2*dt):
+   Freq_max = int(float(Freq_link.get()))
+   print Freq_max
+   print T
+   print dt
+   if Freq_max > 1/(2*dt):
        Num_freq = T/(2*dt)
    else:
        Num_freq = int(round(T*Freq_max))
