@@ -371,7 +371,7 @@ if (write_fourier == 1) then
 	if (write_binary_format == 0) then
 		call WriteFourier(L_fourier,'fw_lamb_',write_fourier)
 	else
-		call WriteBinFourier(L_fourier,'fw_lamb2_',write_fourier)
+		call WriteBinFourier(L_fourier,'fw_lamb_',write_fourier)
 	end if
 end if
 

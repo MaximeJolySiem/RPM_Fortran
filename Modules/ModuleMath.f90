@@ -41,7 +41,7 @@ module ModuleMath
 	  real ( kind = 4 ) r4_uniform_01
 	  real ( kind = 4 ) x
 
-	  r1 = rand()
+	  r1 = rand()*0.999+0.001
 	  r2 = rand()
 	  x = sqrt ( - 2.0E+00 * log ( r1 ) ) * cos ( 2.0E+00 * r4_pi * r2 )
 

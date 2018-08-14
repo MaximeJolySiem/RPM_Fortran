@@ -24,6 +24,10 @@ module ModuleFunction
 		j_min = floor((x-MeshCaracteristics(1))/delta)+1
 		i_min = floor((y-MeshCaracteristics(3))/delta)+1
 
+		if (j_min>800) then
+			print *, x, j_min
+		end if
+
 		dfy = Data_to_get(i_min,j_min+1)-Data_to_get(i_min,j_min)
 		dfx = Data_to_get(i_min+1,j_min)-Data_to_get(i_min,j_min)
 		dfxy = Data_to_get(i_min,j_min)+Data_to_get(i_min+1,j_min+1)-Data_to_get(i_min,j_min+1)-Data_to_get(i_min+1,j_min)
@@ -92,17 +96,17 @@ module ModuleFunction
 		y_max = y_part + Radius*Lambda_part
 		
 		
-		if (x_min < MeshCaracteristics(1)) then
-			x_min = MeshCaracteristics(1)+1e-6
+		if (x_min < MeshCaracteristics(1)+delta/2) then
+			x_min = MeshCaracteristics(1)+delta/2
 		end if
-		if (x_max > MeshCaracteristics(2)) then
-			x_max = MeshCaracteristics(2)-1e-6
+		if (x_max > MeshCaracteristics(2)-delta/2) then
+			x_max = MeshCaracteristics(2)-delta/2
 		end if
-		if (y_min < MeshCaracteristics(3)) then
-			y_min = MeshCaracteristics(3)+1e-6
+		if (y_min < MeshCaracteristics(3)+delta/2) then
+			y_min = MeshCaracteristics(3)+delta/2
 		end if
-		if (y_max > MeshCaracteristics(4)) then
-			y_max = MeshCaracteristics(4)-1e-6
+		if (y_max > MeshCaracteristics(4)-delta/2) then
+			y_max = MeshCaracteristics(4)-delta/2
 		end if
 		
 		GetBox(1) = floor((y_min-MeshCaracteristics(3))/delta)+1
@@ -208,7 +212,7 @@ module ModuleFunction
 			Particle(i,2) = y_part + uy_part*dt
 			
 
-			if (Particle(i,1) > MeshCaracteristics(2)) then
+			if (Particle(i,1) > MeshCaracteristics(2)-MeshCaracteristics(5)/2) then
 				RandomInjector = rand()
 
 				if (RandomInjector<=Prob_top) then
@@ -319,7 +323,7 @@ module ModuleFunction
 			Particle(i,2) = y_part + uy_part*dt
 			
 
-			if (Particle(i,1) > MeshCaracteristics(2)) then
+			if (Particle(i,1) > MeshCaracteristics(2)-MeshCaracteristics(5)/2) then
 				RandomInjector = rand()
 
 				if (RandomInjector<=Prob_top) then
@@ -338,7 +342,7 @@ module ModuleFunction
 					& +Y_VELOCITY(1,ii))
 					
 					Particle(i,1) = NewPosition
-					Particle(i,2) = MeshCaracteristics(4) - rand()*vel_temp*dt
+					Particle(i,2) = MeshCaracteristics(4) - rand()*vel_temp*dt - MeshCaracteristics(5)/10
 					Particle(i,3) = r4_normal_01 ()
 
 
@@ -359,7 +363,7 @@ module ModuleFunction
 						& +Y_VELOCITY(1,ii))
 									
 						Particle(i,1) = NewPosition
-						Particle(i,2) = MeshCaracteristics(3) + rand()*vel_temp*dt
+						Particle(i,2) = MeshCaracteristics(3) + rand()*vel_temp*dt + MeshCaracteristics(5)/10
 						Particle(i,3) = r4_normal_01 ()
 						
 					else
@@ -377,7 +381,7 @@ module ModuleFunction
 						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
 						& +X_VELOCITY(ii,1))
 					
-						Particle(i,1) = MeshCaracteristics(1) + rand()*vel_temp*dt
+						Particle(i,1) = MeshCaracteristics(1) + rand()*vel_temp*dt + MeshCaracteristics(5)/10
 						Particle(i,2) = NewPosition
 						Particle(i,3) = r4_normal_01 ()
 					end if
