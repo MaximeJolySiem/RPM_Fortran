@@ -125,10 +125,6 @@ module ModuleWrite
 			write(i,*) DataToWrite(:,1,i)
 			write(i,*) DataToWrite(:,2,i)
 			close(i)
-			
-			OPEN(2*(i+1), FILE='Output/'//FileName//trim(str(i))//'Y'//'.csv', ACTION="write", STATUS="replace")
-			write(2*(i+1),*) DataToWrite(:,2,i)
-			close(2*(i+1))
     	END DO
 		!$OMP END PARALLEL DO
 	end subroutine WriteFourier
