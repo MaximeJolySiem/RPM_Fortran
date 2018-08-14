@@ -165,7 +165,16 @@ def get_entry_fields():
    text_file.write("write_Lsum=" + str(Lsum_write.get()) + "\n")
    text_file.write("write_binary_format=" + str(bin_write.get()) + "\n")
    text_file.write("write_fourier=" + str(fourier_write.get()) + "\n")
-   text_file.write("Number_freq=" + str(int(Set_freq.get()*float(Final_time.get()))) + "\n")
+
+   Freq_max = int(float(Freq_link.get()))   
+   T = float(Final_time.get())
+   dt = float(Acoustic_Time_Step.get())      
+   if Freq_max > T/(2*dt):
+       Num_freq = T/(2*dt)
+   else:
+       Num_freq = int(round(T*Freq_max))
+
+   text_file.write("Number_freq=" + str(int(Num_freq)) + "\n")
 
    text_file.write("\n") 
    text_file.write("[Save]\n")
@@ -359,6 +368,12 @@ def EstimateMemory():
    Nt = int(round(T/dt))
    nx = int(round((x_max-x_min+Delta)/Delta))
    ny = int(round((y_max-y_min+Delta)/Delta))
+   Freq_max = int(float(Freq_link.get()))   
+   if Freq_max > T/(2*dt):
+       Num_freq = T/(2*dt)
+   else:
+       Num_freq = int(round(T*Freq_max))
+
    Nb_variable = 0
    Memory_estimation = 0
    
@@ -369,6 +384,8 @@ def EstimateMemory():
           Memory_estimation = Memory_estimation+nx*ny*12*Nt
        if Lsum_write.get() == 1:
           Memory_estimation = Memory_estimation+nx*ny*16*Nt
+       if fourier_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*8*Num_freq*2
    else:
        if Vel_write.get() == 1:
           Memory_estimation = Memory_estimation+nx*ny*35*Nt
@@ -376,6 +393,8 @@ def EstimateMemory():
           Memory_estimation = Memory_estimation+nx*ny*18*Nt
        if Lsum_write.get() == 1:
           Memory_estimation = Memory_estimation+nx*ny*35*Nt
+       if fourier_write.get() == 1:
+          Memory_estimation = Memory_estimation+nx*ny*36*Num_freq*2
        
        
    if Part_write.get() == 1:
@@ -583,12 +602,8 @@ Label(Mafenetre, text="Choose maximal frequency : ").grid(row=7, column=3, stick
 Set_freq = IntVar()
 
 Freq_link = Entry(Mafenetre, textvariable=Set_freq)
-scalefreq = Scale(Mafenetre, from_=0, to=1/float(Acoustic_Time_Step.get()), resolution=1/float(Final_time.get()), length=100, orient=HORIZONTAL, variable = Set_freq)
-scalefreq.grid(row=8, column=3, sticky=W)
-
-Freq_link.bind("<Return>", lambda event: scalefreq.set(Set_freq.get()))
-Freq_link.config(width=5)
-Freq_link.grid(row=8, column=3, sticky=W,padx = 120)
+Freq_link.config(width=8)
+Freq_link.grid(row=8, column=3, sticky=W)
 
 
 

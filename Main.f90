@@ -192,10 +192,6 @@ allocate (L_fourier(nx*ny,2,Number_freq))
 
 
 
-print *, Number_freq
-
-
-
 
 
 
@@ -267,13 +263,20 @@ do i = Init_T,Nt
 	Lsum(:,2) = reshape(transpose(Lsum_Y),(/nx*ny/))
 
 
-	!$OMP PARALLEL DO PRIVATE(ii)
-	do ii = 0,Number_freq-1
-		L_fourier(:,1,ii) = L_fourier(:,1,ii) + Lsum(:,1)*exp(2*i1*pi*ii/Nt)*dt
-		L_fourier(:,2,ii) = L_fourier(:,2,ii) + Lsum(:,2)*exp(2*i1*pi*ii/Nt)*dt
-	end do
-	!$OMP END PARALLEL DO
-
+	
+	
+	
+	
+	
+	
+	if (write_fourier == 1) then
+		!$OMP PARALLEL DO PRIVATE(ii)
+		do ii = 1,Number_freq
+			L_fourier(:,1,ii) = L_fourier(:,1,ii) + Lsum(:,1)*exp(2*i1*pi*(ii-1)/Nt)*dt*0.5*(1-cos(2*pi*(ii-1)/(Nt-1)))*1.63
+			L_fourier(:,2,ii) = L_fourier(:,2,ii) + Lsum(:,2)*exp(2*i1*pi*(ii-1)/Nt)*dt*0.5*(1-cos(2*pi*(ii-1)/(Nt-1)))*1.63
+		end do
+		!$OMP END PARALLEL DO
+	end if
 
 
 
@@ -363,10 +366,15 @@ do i = Init_T,Nt
 	TimeStep = TimeStep+1
 end do
 
+if (write_fourier == 1) then
+	write(*,*) "WRITING FREQUENCY DATA"
+	if (write_binary_format == 0) then
+		call WriteFourier(L_fourier,'fw_lamb_',write_fourier)
+	else
+		call WriteBinFourier(L_fourier,'fw_lamb2_',write_fourier)
+	end if
+end if
 
-write(*,*) "WRITING FREQUENCY DATA"
-
-call WriteFourier(L_fourier,'fw_lamb_',write_fourier)
 
 print *, 'Simulation finished.'
 

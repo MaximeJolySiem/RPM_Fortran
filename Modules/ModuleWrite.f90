@@ -119,19 +119,18 @@ module ModuleWrite
 		end if
 
 		Number_freq = size(DataToWrite(1,1,:))
-
-		OPEN(9, FILE='Output/'//FileName//'X'//'.csv', ACTION="write", STATUS="replace")
+		!$OMP PARALLEL DO PRIVATE(i)
 		DO i = 1,Number_freq
-			write(9,*) DataToWrite(:,1,i)
+			OPEN(i, FILE='Output/'//FileName//trim(str(i))//'.csv', ACTION="write", STATUS="replace")
+			write(i,*) DataToWrite(:,1,i)
+			write(i,*) DataToWrite(:,2,i)
+			close(i)
+			
+			OPEN(2*(i+1), FILE='Output/'//FileName//trim(str(i))//'Y'//'.csv', ACTION="write", STATUS="replace")
+			write(2*(i+1),*) DataToWrite(:,2,i)
+			close(2*(i+1))
     	END DO
-    	close(9)
-
-		OPEN(10, FILE='Output/'//FileName//'Y'//'.csv', ACTION="write", STATUS="replace")
-		DO i = 1,Number_freq
-			write(10,*) DataToWrite(:,1,i)
-    	END DO
-    	close(10)
-
+		!$OMP END PARALLEL DO
 	end subroutine WriteFourier
 
 
@@ -150,20 +149,14 @@ module ModuleWrite
 		end if
 
 		Number_freq = size(DataToWrite(1,1,:))
-
-
-		OPEN(9, FILE='Output/'//FileName//'X'//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		!$OMP PARALLEL DO PRIVATE(i)
 		DO i = 1,Number_freq
-			write(9) DataToWrite(:,1,i)
+			OPEN(i, FILE='Output/'//FileName//trim(str(i))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+			write(i) DataToWrite(:,1,i)
+			write(i) DataToWrite(:,2,i)
+			close(i)
     	END DO
-    	close(9)
-
-		OPEN(10, FILE='Output/'//FileName//'Y'//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
-		DO i = 1,Number_freq
-			write(10) DataToWrite(:,1,i)
-    	END DO
-    	close(10)
-
+		!$OMP END PARALLEL DO
 	end subroutine WriteBinFourier
 
 	
