@@ -26,6 +26,7 @@ integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format
 integer :: IsSave
 integer :: Get_Number_Thread
 integer :: Number_freq
+integer :: Total_Memory
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks, nb_inter
 REAL :: elapsed_time  ! real time in seconds
@@ -41,6 +42,7 @@ real, dimension(5) :: MeshCaracteristics
 complex, allocatable :: L_fourier(:,:,:)
 
 character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
+character(len=20) :: string_temp_print
 
 integer :: Parallel_computing
 
@@ -88,6 +90,7 @@ ny = (y_max-y_min)/delta+1
 Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
 call omp_set_num_threads(Get_Number_Thread)
 
+write(*,*) ''
 write(*,*) 'PARALLEL COMPUTING ENABLE'
 write(*,*) 'NUMBER OF THREAD USED : ', str(Get_Number_Thread)
 write(*,*) ''
@@ -137,6 +140,7 @@ if (write_fourier == 1) then
 	end if
 	write(*,*) 'FOURIER TRANSFORM ENABLE'
 	write(*,*) 'Number of frequencies : ', str(Number_freq)
+	write(*,*) 'Frequency = ', trim(str(0)), 'Hz to ', trim(str(int(Number_freq/(T)))), 'Hz. Resolution = ' , trim(str(int(1/T))), 'Hz'
 	write(*,*) ''
 end if
 
@@ -151,6 +155,7 @@ allocate(X_VELOCITYTemp(nx*ny),Y_VELOCITYTemp(nx*ny),TKETemp(nx*ny),SDRTemp(nx*n
 
 write(*,*) 'READING RANS DATA'
 write(*,*) 'Number of points : ', str(nx*ny)
+write(*,*) ''
 
 X_VELOCITYTemp = GetVtkField('X_VELOCITY',File_path)
 Y_VELOCITYTemp = GetVtkField('Y_VELOCITY',File_path)
@@ -211,18 +216,26 @@ allocate (L_fourier(nx*ny,2,Number_freq))
 
 
 
+write(*,*) ''
+write(*,*) 'RPM PARAMETERS'
+write(*,*) 'Filter type : ', FilterType
+write(*,*) 'Radius of consideration : ', str(Radius)
+write(string_temp_print,*) dt
+write(*,*) 'Time step : ', trim(string_temp_print)
+write(string_temp_print,*) T
+write(*,*) 'End time : ', trim(string_temp_print)
+write(*,*) 'Number of samples : ', trim(str(Nt))
+write(*,*) ''
 
-
-
-
-
-
-
+call WriteInformation(nx, ny, write_Particle, write_Vel, write_Vor, write_Lsum, &
+	& write_fourier, write_binary_format, Particle, Nt, Number_freq)
 
 
 write(*,*) ''
 write(*,*) 'BEGINING COMPUTING'
 write(*,*) ''
+
+
 
 
 ! Moving particle, calculating the stream function for each step

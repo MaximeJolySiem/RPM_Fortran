@@ -155,5 +155,64 @@ module ModuleWrite
 		!$OMP END PARALLEL DO
 	end subroutine WriteBinFourier
 
+
+
+
+
+	subroutine WriteInformation(nx, ny, write_Particle, write_Vel, write_Vor, write_Lsum, &
+	&  write_fourier, write_binary_format, Particle, Nt, Number_freq)
+
+
+
+		implicit none
+
+		integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_fourier, nx, ny
+		integer :: Total_Memory, write_binary_format, Nt, Number_freq
+		real, dimension(:,:) :: Particle
+
+		write(*,*) 'WRITING PARAMETERS'
+
+		if (write_Particle + write_Vel + write_Vor + write_Lsum + write_fourier == 0) then
+			write(*,*) 'WARNING : WRITING NO DATA FILES'
+		else
+
+			Total_Memory = 0
+
+			if (write_Particle == 1) then
+				write(*,*) 'Writing particle : ', trim(str(int(1e-6*(36*write_binary_format+54*(1-write_binary_format)) & 
+					& *size(Particle(:,1))*Nt))), ' Mo'
+				Total_Memory = Total_Memory + int(1e-6*(36*write_binary_format+54*(1-write_binary_format)) & 
+					& *size(Particle(:,1))*Nt)
+			end if
+			if (write_Vel == 1) then
+				write(*,*) 'Writing velociy : ', trim(str(int(1e-6*nx*ny*(16*write_binary_format+35*(1-write_binary_format)) &
+					& *Nt))), ' Mo'
+				Total_Memory = Total_Memory + int(1e-6*nx*ny*(16*write_binary_format+35*(1-write_binary_format)) &
+					& *Nt)
+			end if
+			if (write_Vor == 1) then
+				write(*,*) 'Writing vorticity : ', trim(str(int(1e-6*nx*ny*(12*write_binary_format+18*(1-write_binary_format)) &
+					& *Nt))), ' Mo'
+				Total_Memory = Total_Memory + int(1e-6*nx*ny*(12*write_binary_format+18*(1-write_binary_format)) &
+					& *Nt)
+			end if
+			if (write_Lsum == 1) then
+				write(*,*) 'Writing lamb vector : ', trim(str(int(1e-6*nx*ny*(16*write_binary_format+35*(1-write_binary_format)) &
+					& *Nt))), ' Mo'
+				Total_Memory = Total_Memory + int(1e-6*nx*ny*(16*write_binary_format+35*(1-write_binary_format)) &
+					& *Nt)
+			end if
+			if (write_fourier == 1) then
+				write(*,*) 'Writing fourier transform : ', trim(str(int(1e-6*nx*ny*(16*write_binary_format+72*(1-write_binary_format)) &
+					& *Number_freq))), ' Mo'
+				Total_Memory = Total_Memory + int(1e-6*nx*ny*(16*write_binary_format+72*(1-write_binary_format)) &
+					& *Number_freq)
+			end if
+			write(*,*) ''
+			write(*,*) 'TOTAL MEMORY NEEDED : ', trim(str(Total_Memory)), ' Mo'
+
+		end if
+	end subroutine WriteInformation
+
 	
 end Module ModuleWrite

@@ -276,12 +276,12 @@ def EstimateMemory():
        
    if Part_write.get() == 1:
       if (bin_write.get() == 1):
-          Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*12*Nt
+          Memory_estimation = Memory_estimation + int(Particle_Number.get())*3*12*Nt
       else:
-          Memory_estimation = Memory_estimation + int(Particle_Number.get())*4*18*Nt
+          Memory_estimation = Memory_estimation + int(Particle_Number.get())*3*18*Nt
       
    Memory_estimation = int(round(Memory_estimation*1e-6))
-   Memory_string_var.set(str(Memory_estimation) + ' Mb')
+   Memory_string_var.set(str(Memory_estimation) + ' Mo')
  
  
  
@@ -299,10 +299,10 @@ def EstimateRAMMemory():
        Num_freq = int(round(T*Freq_max))
 
    Nb_variable = 0
-   Memory_estimation = Num_freq * 16 * nx*ny
+   Memory_estimation = Num_freq * 16 * nx*ny * fourier_write.get()
    
    Memory_estimation = int(round(Memory_estimation*1e-6))
-   RAM_Memory_string_var.set(str(Memory_estimation) + ' Mb')   
+   RAM_Memory_string_var.set(str(Memory_estimation) + ' Mo')   
    
  
  
