@@ -27,7 +27,7 @@ integer :: IsSave
 integer :: Get_Number_Thread
 integer :: Number_freq
 
-INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
+INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks, nb_inter
 REAL :: elapsed_time  ! real time in seconds
 
 real, allocatable :: X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
@@ -52,12 +52,7 @@ logical :: dir_e
 
 
 
-!Verify and create Data folder
-inquire(file='./Output/.', exist=dir_e)
 
-if (.not. dir_e ) then
-  call system('mkdir Output')
-end if
 
 
 ! call init_random_seed()
@@ -90,14 +85,13 @@ nx = (x_max-x_min)/delta+1
 ny = (y_max-y_min)/delta+1
 
 ! Enable parallel computing
-Parallel_computing = GetIntVtkValue("Parallel_computing")
 Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
 call omp_set_num_threads(Get_Number_Thread)
-if (Parallel_computing == 1) then
-	write(*,*) 'PARALLEL COMPUTING ENABLE'
-	write(*,*) 'NUMBER OF THREAD USED : ', str(Get_Number_Thread)
-	write(*,*) ''
-end if
+
+write(*,*) 'PARALLEL COMPUTING ENABLE'
+write(*,*) 'NUMBER OF THREAD USED : ', str(Get_Number_Thread)
+write(*,*) ''
+
 
 !Writing parameters
 write_Particle = GetIntVtkValue("write_Particle")
@@ -105,6 +99,7 @@ write_Vel = GetIntVtkValue("write_Vel")
 write_Vor = GetIntVtkValue("write_Vor")
 write_Lsum = GetIntVtkValue("write_Lsum")
 write_binary_format = GetIntVtkValue("write_binary_format")
+write_fourier = GetRealVtkValue("write_fourier")
 
 ! Particle number
 Nparticle = GetIntVtkValue("Nparticles")
@@ -115,14 +110,39 @@ Radius = GetIntVtkValue("Rconst")
 ! Time caracteristics
 dt = GetRealVtkValue("viz_interval")
 T = GetRealVtkValue("end_time")
-write_fourier = GetRealVtkValue("write_fourier")
+Nt = T/dt
+
+! Frequency caracteristics
 Number_freq = GetIntVtkValue("Number_freq")
 
-if (dt>T) then
-	stop " : Enter final time greater than time step"
+
+
+
+
+!Verify and create Data folders
+if (write_Particle+write_Vel+write_Vor+write_Lsum > 0) then
+	inquire(file='./Output_time/.', exist=dir_e)
+
+	if (.not. dir_e ) then
+	  call system('mkdir Output_time')
+	end if
 end if
 
-Nt = T/dt
+
+if (write_fourier == 1) then
+	inquire(file='./Output_frequency/.', exist=dir_e)
+
+	if (.not. dir_e ) then
+	  call system('mkdir Output_frequency')
+	end if
+	write(*,*) 'FOURIER TRANSFORM ENABLE'
+	write(*,*) 'Number of frequencies : ', str(Number_freq)
+	write(*,*) ''
+end if
+
+
+
+
 
 allocate (X_VELOCITY(ny,nx),Y_VELOCITY(ny,nx),TKE(ny,nx),SDR(ny,nx),Z_VORTICITY(ny,nx),vtkMask(ny,nx),Lambda(ny,nx))
 allocate(X_VELOCITYTemp(nx*ny),Y_VELOCITYTemp(nx*ny),TKETemp(nx*ny),SDRTemp(nx*ny),Z_VORTICITYTemp(nx*ny),vtkMaskTemp(nx*ny))
@@ -215,43 +235,28 @@ do i = Init_T,Nt
 	
 
 
-
-
-
-	if (Parallel_computing == 1) then
-		call MoveParticle_opt(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-		call Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
-			& Parallel_computing,Radius,FilterType,ScalingType)
-	else
-		call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-		call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
-			& Parallel_computing,Radius,FilterType,ScalingType)
-	end if
-
-
+	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
+	CALL SYSTEM_CLOCK(COUNT=nb_inter)
+	call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
+		& Radius,FilterType,ScalingType)
 
 
 	StreamFunction = StreamFunction*Volume
-	if (Parallel_computing == 1) then
-		!$OMP SECTIONS
-		!$OMP SECTION
-		call der2_x(Uy, -StreamFunction, vtkMask, MeshCaracteristics) !Uy = -dpsi/dx
-		!$OMP SECTION
-		call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
-		!$OMP END SECTIONS
 
-		!$OMP SECTIONS
-		!$OMP SECTION
-		call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
-		!$OMP SECTION
-		call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
-		!$OMP END SECTIONS
-	else
-		call der2_x(Uy, -StreamFunction, vtkMask, MeshCaracteristics) !Uy = -dpsi/dx
-		call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
-		call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
-		call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
-	end if
+	!$OMP SECTIONS
+	!$OMP SECTION
+	call der2_x(Uy, -StreamFunction, vtkMask, MeshCaracteristics) !Uy = -dpsi/dx
+	!$OMP SECTION
+	call der2_y(Ux, StreamFunction, vtkMask, MeshCaracteristics) !Ux = dpsi/dy
+	!$OMP END SECTIONS
+
+	!$OMP SECTIONS
+	!$OMP SECTION
+	call der2_x(dUy_x, Uy, vtkMask, MeshCaracteristics)
+	!$OMP SECTION
+	call der2_y(dUx_y, Ux, vtkMask, MeshCaracteristics)
+	!$OMP END SECTIONS
+
 	Vorticity = dUy_x-dUx_y
 	Lsum_X = Y_VELOCITY*Vorticity + Uy*Z_VORTICITY
 	Lsum_Y = -X_VELOCITY*Vorticity - Ux*Z_VORTICITY
@@ -284,52 +289,30 @@ do i = Init_T,Nt
 
 
 
-
-
-
-	if (Parallel_computing == 1) then
-		if (write_binary_format == 0) then
-			!$OMP SECTIONS
-			!$OMP SECTION
-			call WriteParticle(TimeStep,Particle,write_Particle)
-			!$OMP SECTION
-			call WriteData(TimeStep,Velocity,'Vel',write_Vel)
-			!$OMP SECTION
-			call WriteData(TimeStep,Vorticity_write,'Vor',write_Vor)
-			!$OMP SECTION
-			call WriteData(TimeStep,Lsum,'Lsum',write_Lsum)
-			!$OMP END SECTIONS
-
-		else
-			!$OMP SECTIONS
-			!$OMP SECTION
-			call WriteBinParticle(TimeStep,Particle,write_Particle)
-			!$OMP SECTION
-			call WriteBinData(TimeStep,Velocity,'Vel',write_Vel)	
-			!$OMP SECTION
-			call WriteBinData(TimeStep,Vorticity_write,'Vor',write_Vor)
-			!$OMP SECTION
-			call WriteBinData(TimeStep,Lsum,'Lsum',write_Lsum)
-			!$OMP END SECTIONS
-		end if
+	if (write_binary_format == 0) then
+		!$OMP SECTIONS
+		!$OMP SECTION
+		call WriteParticle(TimeStep,Particle,write_Particle)
+		!$OMP SECTION
+		call WriteData(TimeStep,Velocity,'Vel',write_Vel)
+		!$OMP SECTION
+		call WriteData(TimeStep,Vorticity_write,'Vor',write_Vor)
+		!$OMP SECTION
+		call WriteData(TimeStep,Lsum,'Lsum',write_Lsum)
+		!$OMP END SECTIONS
 
 	else
-		if (write_binary_format == 0) then
-			call WriteParticle(TimeStep,Particle,write_Particle)
-			call WriteData(TimeStep,Velocity,'Vel',write_Vel)
-			call WriteData(TimeStep,Vorticity_write,'Vor',write_Vor)
-			call WriteData(TimeStep,Lsum,'Lsum',write_Lsum)
-
-		else
-			call WriteBinParticle(TimeStep,Particle,write_Particle)
-			call WriteBinData(TimeStep,Velocity,'Vel',write_Vel)	
-			call WriteBinData(TimeStep,Vorticity_write,'Vor',write_Vor)
-			call WriteBinData(TimeStep,Lsum,'Lsum',write_Lsum)
-		
-		end if
-	end if		
-
-
+		!$OMP SECTIONS
+		!$OMP SECTION
+		call WriteBinParticle(TimeStep,Particle,write_Particle)
+		!$OMP SECTION
+		call WriteBinData(TimeStep,Velocity,'Vel',write_Vel)	
+		!$OMP SECTION
+		call WriteBinData(TimeStep,Vorticity_write,'Vor',write_Vor)
+		!$OMP SECTION
+		call WriteBinData(TimeStep,Lsum,'Lsum',write_Lsum)
+		!$OMP END SECTIONS
+	end if
 
 
 

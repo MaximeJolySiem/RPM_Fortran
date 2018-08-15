@@ -60,7 +60,6 @@ def get_entry_fields():
       text_file.write("partVol=" + str(((x_max-x_min)*(y_max-y_min)/float(Particle_Number.get()))**(.5)) + "\n")
    else :
       text_file.write("partVol=0" + "\n")
-   text_file.write("Parallel_computing=" + str(OMP_enable.get()) + "\n")
    text_file.write("Parallel_Number_Thread=" + str(Set_Number_Thread.get()) + "\n")
 
    text_file.write("\n") 
@@ -115,17 +114,16 @@ def get_entry_fields():
    text_file.write(Filter_type.get() + "\n") #12
    text_file.write(Scaling_type.get() + "\n") #13
    text_file.write(Radius_consideration.get() + "\n") #14
-   text_file.write(str(OMP_enable.get()) + "\n") #15
-   text_file.write(str(Set_Number_Thread.get()) + "\n") #16
-   text_file.write(str(bin_write.get()) + "\n") #17
-   text_file.write(str(Part_write.get()) + "\n") #18
-   text_file.write(str(Vel_write.get()) + "\n") #19
-   text_file.write(str(Vor_write.get()) + "\n") #20
-   text_file.write(str(Lsum_write.get()) + "\n") #21
-   text_file.write(str(fourier_write.get()) + "\n") #22
-   text_file.write(Freq_link.get() + "\n") #23
-   text_file.write(str(Save_part.get()) + "\n") #24
-   text_file.write(ParticleFilename + "\n") #25
+   text_file.write(str(Set_Number_Thread.get()) + "\n") #15
+   text_file.write(str(bin_write.get()) + "\n") #16
+   text_file.write(str(Part_write.get()) + "\n") #17
+   text_file.write(str(Vel_write.get()) + "\n") #18
+   text_file.write(str(Vor_write.get()) + "\n") #19
+   text_file.write(str(Lsum_write.get()) + "\n") #20
+   text_file.write(str(fourier_write.get()) + "\n") #21
+   text_file.write(Freq_link.get() + "\n") #22
+   text_file.write(str(Save_part.get()) + "\n") #23
+   text_file.write(ParticleFilename + "\n") #24
    
    
    
@@ -242,7 +240,6 @@ def openParticlefile():
  
 
 def EstimateMemory():
-   global Label_test_for_memory
    dt = float(Acoustic_Time_Step.get())
    T = float(Final_time.get())
    Nt = int(round(T/dt))
@@ -288,6 +285,25 @@ def EstimateMemory():
  
  
  
+    
+def EstimateRAMMemory():
+   dt = float(Acoustic_Time_Step.get())
+   T = float(Final_time.get())
+   Nt = int(round(T/dt))
+   nx = int(round((x_max-x_min+Delta)/Delta))
+   ny = int(round((y_max-y_min+Delta)/Delta))
+   Freq_max = int(float(Freq_link.get()))
+   if Freq_max > 1/(2*dt):
+       Num_freq = T/(2*dt)
+   else:
+       Num_freq = int(round(T*Freq_max))
+
+   Nb_variable = 0
+   Memory_estimation = Num_freq * 16 * nx*ny
+   
+   Memory_estimation = int(round(Memory_estimation*1e-6))
+   RAM_Memory_string_var.set(str(Memory_estimation) + ' Mb')   
+   
  
  
     
@@ -448,16 +464,12 @@ else:
     Radius_consideration.insert(0,"0")
 
 
-OMP_enable = IntVar()
-Checkbutton(Mafenetre, text="Enable Parallel computing", variable=OMP_enable).grid(row=Line_second_part+9, column = 0, sticky=W)
-if(If_save == 1):
-    OMP_enable.set(int(data_saved[15][0:len(data_saved[15])-1]))
 
-Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+10, column=0, sticky=W)
+Label(Mafenetre, text="Select the number of thread : ").grid(row=Line_second_part+9, column=0, sticky=W)
 Set_Number_Thread = IntVar()
-Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+11, column=0, sticky=W)
+Scale_Thread = Scale(Mafenetre, from_=1, to=Get_Thread_Number, orient=HORIZONTAL, variable = Set_Number_Thread).grid(row=Line_second_part+10, column=0, sticky=W)
 if(If_save == 1):
-    Set_Number_Thread.set(int(data_saved[16][0:len(data_saved[16])-1]))
+    Set_Number_Thread.set(int(data_saved[15][0:len(data_saved[15])-1]))
 
 
 
@@ -478,7 +490,7 @@ Label(Mafenetre, text="Writing parameters", font='Helvetica 18 bold').grid(row=L
 bin_write = IntVar()
 Checkbutton(Mafenetre, text="Write in binary format", variable=bin_write).grid(row=Line_second_part+1, column = 1, sticky=W)
 if(If_save == 1):
-    bin_write.set(int(data_saved[17][0:len(data_saved[17])-1]))
+    bin_write.set(int(data_saved[16][0:len(data_saved[16])-1]))
 else:
     bin_write.set(0)
 
@@ -487,35 +499,35 @@ else:
 Part_write = IntVar()
 Checkbutton(Mafenetre, text="Particle", variable=Part_write).grid(row=Line_second_part+2, column = 1, sticky=W)
 if(If_save == 1):
-    Part_write.set(int(data_saved[18][0:len(data_saved[18])-1]))
+    Part_write.set(int(data_saved[17][0:len(data_saved[17])-1]))
 else:
     Part_write.set(0)
 
 Vel_write = IntVar()
 Checkbutton(Mafenetre, text="Velocity", variable=Vel_write).grid(row=Line_second_part+3, column = 1, sticky=W)
 if(If_save == 1):
-    Vel_write.set(int(data_saved[19][0:len(data_saved[19])-1]))
+    Vel_write.set(int(data_saved[18][0:len(data_saved[18])-1]))
 else:
     Vel_write.set(0)
 
 Vor_write = IntVar()
 Checkbutton(Mafenetre, text="Vorticity", variable=Vor_write).grid(row=Line_second_part+4, column = 1, sticky=W)
 if(If_save == 1):
-    Vor_write.set(int(data_saved[20][0:len(data_saved[20])-1]))
+    Vor_write.set(int(data_saved[19][0:len(data_saved[19])-1]))
 else:
     Vor_write.set(0)
 
 Lsum_write = IntVar()
 Checkbutton(Mafenetre, text="Lamb", variable=Lsum_write).grid(row=Line_second_part+5, column = 1, sticky=W)
 if(If_save == 1):
-    Lsum_write.set(int(data_saved[21][0:len(data_saved[21])-1]))
+    Lsum_write.set(int(data_saved[20][0:len(data_saved[20])-1]))
 else:
     Lsum_write.set(0)
 
 fourier_write = IntVar()
 Checkbutton(Mafenetre, text="Fourier transform", variable=fourier_write).grid(row=Line_second_part+6, column = 1, sticky=W)
 if(If_save == 1):
-    fourier_write.set(int(data_saved[22][0:len(data_saved[22])-1]))
+    fourier_write.set(int(data_saved[21][0:len(data_saved[21])-1]))
 else:
     fourier_write.set(0)
 
@@ -529,11 +541,16 @@ Freq_link = Entry(Mafenetre, textvariable=Set_freq)
 Freq_link.config(width=8)
 Freq_link.grid(row=Line_second_part+8, column=1, sticky=W)
 
+if(If_save == 1):
+    Freq_link.insert(0,data_saved[22][0:len(data_saved[22])-2])
 
 ButtonMemory = Button(Mafenetre, text="Memory estimation", command=EstimateMemory).grid(row=Line_second_part+9,column=1, sticky=W, pady = 5)
 Memory_string_var = StringVar(value="")
 depositLabel = Label(Mafenetre, textvariable=Memory_string_var).grid(row=Line_second_part+9,column=1, padx = 130) 
 
+ButtonRAMMemory = Button(Mafenetre, text="RAM Memory estimation", command=EstimateRAMMemory).grid(row=Line_second_part+10,column=1, sticky=W, pady = 5)
+RAM_Memory_string_var = StringVar(value="")
+RAMdepositLabel = Label(Mafenetre, textvariable=RAM_Memory_string_var).grid(row=Line_second_part+10,column=1, padx = 170) 
 
 
 
@@ -556,7 +573,7 @@ Label(Mafenetre, text="Save parameters", font='Helvetica 18 bold').grid(row=Line
 Save_part = IntVar()
 Checkbutton(Mafenetre, text="Enable save", variable=Save_part).grid(row=Line_second_part+1, column = 2, sticky=W)
 if(If_save == 1):
-    Save_part.set(int(data_saved[24][0:len(data_saved[24])-1]))
+    Save_part.set(int(data_saved[23][0:len(data_saved[23])-1]))
 
 Label(Mafenetre, text="Open particle file : ").grid(row=Line_second_part+2, column=2, sticky=W)
 ButtonVtk = Button(Mafenetre, text="Directory", command=openParticlefile).grid(row=Line_second_part+2,column=2, padx=130, sticky=W)
@@ -564,8 +581,8 @@ Path_particle = Entry(Mafenetre)
 Path_particle.config(width=20)
 Path_particle.grid(row=Line_second_part+3,column=2, sticky=W)
 if(If_save == 1):
-    Path_particle.insert(0,data_saved[25][0:len(data_saved[25])-1])
-    ParticleFilename = data_saved[25][0:len(data_saved[25])-1]
+    Path_particle.insert(0,data_saved[24][0:len(data_saved[24])-1])
+    ParticleFilename = data_saved[24][0:len(data_saved[24])-1]
 else:
     Path_particle.insert(0,"Empty")
 

@@ -176,124 +176,12 @@ module ModuleFunction
 	
 	
 	
-	
-	
-	
-	
-	
-	
+
+
+
+
 
 	subroutine MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-
-		implicit none
-
-		real :: dt,x_part,y_part,ux_part,uy_part, vel_temp
-		real :: Prob_top, Prob_bot
-		real :: RandomInjector,RandomPosition,NewPosition
-		integer :: i,N,ny,ii
-		real,dimension(:,:) :: Particle, X_VELOCITY, Y_VELOCITY, PartSeeder
-		real,dimension(5) :: MeshCaracteristics
-		
-		ny = size(X_VELOCITY(:,1))
-
-
-		Prob_top = sum(abs(Y_VELOCITY(1,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
-		Prob_bot = Prob_top+sum(abs(Y_VELOCITY(ny,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
-
-
-		N = size(Particle(:,1))
-		
-		do i = 1,N
-			x_part = Particle(i,1)
-			y_part = Particle(i,2)
-			ux_part = Get_value(x_part,y_part,MeshCaracteristics,X_VELOCITY)
-			uy_part = Get_value(x_part,y_part,MeshCaracteristics,Y_VELOCITY)
-			Particle(i,1) = x_part + ux_part*dt
-			Particle(i,2) = y_part + uy_part*dt
-			
-
-			if (Particle(i,1) > MeshCaracteristics(2)-MeshCaracteristics(5)/2) then
-				RandomInjector = (rand()*0.999999999999+0.000000000001)
-
-				if (RandomInjector<=Prob_top) then
-					RandomPosition = (rand()*0.999999999999+0.000000000001)
-					ii = 1
-					do while(PartSeeder(1,ii)<RandomPosition)
-						ii = ii + 1
-					end do
-					ii = ii-1
-					
-					NewPosition = RandomPosition/(PartSeeder(1,ii+1)-PartSeeder(1,ii)) &
-					& +ii-1/(PartSeeder(1,ii+1)-PartSeeder(1,ii))*PartSeeder(1,ii)
-					NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
-					
-					vel_temp = abs(RandomPosition*(Y_VELOCITY(1,ii+1)-Y_VELOCITY(1,ii)) &
-					& +Y_VELOCITY(1,ii))
-					
-					Particle(i,1) = NewPosition
-					Particle(i,2) = MeshCaracteristics(4) - (rand()*0.999999999999+0.000000000001)*vel_temp*dt
-					Particle(i,3) = r4_normal_01 ()
-
-
-				elseif (Prob_top<RandomInjector) then
-					if (RandomInjector<=Prob_bot) then
-						RandomPosition = (rand()*0.999999999999+0.000000000001)
-						ii = 1
-						do while(PartSeeder(3,ii)<RandomPosition)
-							ii = ii + 1
-						end do
-						ii = ii-1
-						
-						NewPosition = RandomPosition/(PartSeeder(3,ii+1)-PartSeeder(3,ii)) &
-						& +ii-1/(PartSeeder(3,ii+1)-PartSeeder(3,ii))*PartSeeder(3,ii)
-						NewPosition = MeshCaracteristics(1)+NewPosition*MeshCaracteristics(5)
-						
-						vel_temp = abs(RandomPosition*(Y_VELOCITY(ny,ii+1)-Y_VELOCITY(ny,ii)) &
-						& +Y_VELOCITY(1,ii))
-									
-						Particle(i,1) = NewPosition
-						Particle(i,2) = MeshCaracteristics(3) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt
-						Particle(i,3) = r4_normal_01 ()
-						
-					else
-						RandomPosition = (rand()*0.999999999999+0.000000000001)
-						ii = 1
-						do while(PartSeeder(2,ii)<RandomPosition)
-							ii = ii + 1
-						end do
-						ii = ii-1
-						
-						NewPosition = RandomPosition/(PartSeeder(2,ii+1)-PartSeeder(2,ii)) &
-						& +ii-1/(PartSeeder(2,ii+1)-PartSeeder(2,ii))*PartSeeder(2,ii)
-						NewPosition = MeshCaracteristics(3)+NewPosition*MeshCaracteristics(5)
-											
-						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
-						& +X_VELOCITY(ii,1))
-					
-						Particle(i,1) = MeshCaracteristics(1) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt
-						Particle(i,2) = NewPosition
-						Particle(i,3) = r4_normal_01 ()
-					end if
-
-				end if
-
-			end if
-
-		end do
-	end subroutine MoveParticle
-
-
-
-
-	
-	
-
-
-
-
-
-
-	subroutine MoveParticle_opt(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
 
 		implicit none
 
@@ -392,7 +280,7 @@ module ModuleFunction
 
 		end do
 		!$OMP END PARALLEL DO
-	end subroutine MoveParticle_opt
+	end subroutine MoveParticle
 
 
 
@@ -404,177 +292,10 @@ module ModuleFunction
 	
 	
 	
-	
-	
 
-
+	
 	subroutine Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction, &
-	                           & vtkMask,Parallel_computing,Radius,FilterType,ScalingType)
-
-
-		implicit none
-
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2,R
-		integer :: nx,ny,N_particle,i,j,k,Radius
-		real, allocatable :: StreamFunction(:,:), temp(:,:)
-		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask
-		real, dimension(5) :: MeshCaracteristics
-		integer, dimension(4) :: Box
-		real :: pi = 3.14159265358
-
-		character(len=*) :: FilterType, ScalingType
-
-		integer :: Parallel_computing
-
-		delta = MeshCaracteristics(5)
-		nx = size(TKE(1,:))
-		ny = size(TKE(:,1))
-		allocate (temp(ny,nx))
-		temp = 0
-		
-		N_particle = size(Particle(:,1))
-		
-		
-		if (FilterType == "Gaussian") then
-
-			if (ScalingType == "Particle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,TKe)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Gaussian_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			elseif (ScalingType == "kGrid_lambdaParticle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							temp(i,j) = temp(i,j) + Gaussian_filter_grid(R,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			else
-				stop 0		
-			end if	
-			
-			
-			
-			
-		else if (FilterType == "VonKarman") then
-
-			if (ScalingType == "Particle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,TKe)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + VonKarman_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			elseif (ScalingType == "kGrid_lambdaParticle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							temp(i,j) = temp(i,j) + VonKarman_filter_grid(R,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			else
-				stop 0		
-			end if	
-		
-		
-		
-		
-		else if (FilterType == "Liepmann") then
-
-			if (ScalingType == "Particle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							TKE_grid = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,TKe)*vtkMask(i,j)
-							temp(i,j) = temp(i,j) + Liepmann_filter(R,TKE_grid,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			elseif (ScalingType == "kGrid_lambdaParticle") then
-				do k = 1, N_particle
-					Lambda_part = Get_value(Particle(k,1),Particle(k,2),MeshCaracteristics,Lambda)
-					Box = GetBox(Particle(k,1),Particle(k,2),Lambda_part,MeshCaracteristics,Radius)
-					do j = Box(3), Box(4)
-						do i = Box(1), Box(2)
-							x_grid = MeshCaracteristics(1) + (j-1)*delta
-							y_grid = MeshCaracteristics(3) + (i-1)*delta
-							R = sqrt((x_grid-Particle(k,1))**2 + (y_grid-Particle(k,2))**2)
-							temp(i,j) = temp(i,j) + Liepmann_filter_grid(R,Lambda_part)*Particle(k,3)
-						end do
-					end do
-				end do	
-
-			else
-				stop 0		
-			end if
-		end if
-		if (ScalingType == "kGrid_lambdaParticle") then
-			if (FilterType == "Gaussian") then
-				StreamFunction = temp*sqrt(TKE*2/pi)
-			elseif (FilterType == "VonKarman") then
-				StreamFunction = temp*sqrt(TKE)
-			else
-				StreamFunction = temp*sqrt(TKE*2/3)
-			end if
-		else
-			StreamFunction = temp
-		end if
-
-	end subroutine Calc_Fluctuation
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	subroutine Calc_Fluctuation_opt(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction, &
-								   & vtkMask,Parallel_computing,Radius,FilterType,ScalingType)
+								   & vtkMask,Radius,FilterType,ScalingType)
 
 		implicit none
 
@@ -587,8 +308,6 @@ module ModuleFunction
 		real :: pi = 3.14159265358
 
 		character(len=*) :: FilterType, ScalingType
-
-		integer :: Parallel_computing
 
 		delta = MeshCaracteristics(5)
 		nx = size(TKE(1,:))
@@ -735,7 +454,7 @@ module ModuleFunction
 		end if
 		deallocate (temp)
 
-	end subroutine Calc_Fluctuation_opt
+	end subroutine Calc_Fluctuation
 	
 	
 	

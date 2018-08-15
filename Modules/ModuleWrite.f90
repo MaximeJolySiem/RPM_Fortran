@@ -19,7 +19,7 @@ module ModuleWrite
 
 		N = size(Particle_to_write(:,1))
 
-		OPEN(11, FILE='Output/'//'Particle'//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
+		OPEN(11, FILE='Output_time/'//'Particle'//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
 
 		DO i = 1,N
 			write(11,*) Particle_to_write(i,:)
@@ -42,7 +42,7 @@ module ModuleWrite
 
 		N = size(Particle_to_write(:,1))
 
-		OPEN(11, FILE='Output/'//'Particle'//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		OPEN(11, FILE='Output_time/'//'Particle'//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
 
 		DO i = 1,N
 			write(11) Particle_to_write(i,:)
@@ -69,7 +69,7 @@ module ModuleWrite
 
 		N = size(DataToWrite(:,1))
 
-		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
+		OPEN(9, FILE='Output_time/'//FileName//trim(str(TimeStep))//'.csv', ACTION="write", STATUS="replace")
 		DO i = 1,N
 			write(9,*) DataToWrite(i,:)
     	END DO
@@ -95,7 +95,7 @@ module ModuleWrite
 
 		N = size(DataToWrite(:,1))
 
-		OPEN(9, FILE='Output/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+		OPEN(9, FILE='Output_time/'//FileName//trim(str(TimeStep))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
 		DO i = 1,N
 			write(9) DataToWrite(i,:)
     	END DO
@@ -121,7 +121,7 @@ module ModuleWrite
 		Number_freq = size(DataToWrite(1,1,:))
 		!$OMP PARALLEL DO PRIVATE(i)
 		DO i = 1,Number_freq
-			OPEN(i, FILE='Output/'//FileName//trim(str(i))//'.csv', ACTION="write", STATUS="replace")
+			OPEN(i, FILE='Output_frequency/'//FileName//trim(str(i))//'.csv', ACTION="write", STATUS="replace")
 			write(i,*) DataToWrite(:,1,i)
 			write(i,*) DataToWrite(:,2,i)
 			close(i)
@@ -147,7 +147,7 @@ module ModuleWrite
 		Number_freq = size(DataToWrite(1,1,:))
 		!$OMP PARALLEL DO PRIVATE(i)
 		DO i = 1,Number_freq
-			OPEN(i, FILE='Output/'//FileName//trim(str(i))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
+			OPEN(i, FILE='Output_frequency/'//FileName//trim(str(i))//'.bin', FORM='UNFORMATTED', ACTION="write", STATUS="replace")
 			write(i) DataToWrite(:,1,i)
 			write(i) DataToWrite(:,2,i)
 			close(i)
