@@ -12,21 +12,20 @@ implicit none
 !Declaration des variables
 integer, parameter :: seed = 86456
 
-real :: x_min, x_max, y_min, y_max, delta, x
+real :: x_min, x_max, y_min, y_max, delta
 real :: total_time, Lambda_min
 real :: dt, T, Volume
 real :: pi = 3.14159265358
 
 complex :: i1 = (0,-1)
 
-integer :: nx,ny,i,j,Radius,k,ii
+integer :: nx,ny,i,j,Radius,ii
 integer :: Nparticle
 integer :: TimeStep,Nt,Init_T
 integer :: write_Particle, write_Vel, write_Vor, write_Lsum, write_binary_format, write_fourier
 integer :: IsSave
 integer :: Get_Number_Thread
 integer :: Number_freq
-integer :: Total_Memory
 
 INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks, nb_inter
 REAL :: elapsed_time  ! real time in seconds
@@ -34,7 +33,7 @@ REAL :: elapsed_time  ! real time in seconds
 real, allocatable :: X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
 real, allocatable :: StreamFunction(:,:),Lambda(:,:),Ux(:,:), Uy(:,:), dUy_x(:,:), dUx_y(:,:), Lsum_X(:,:), Lsum_Y(:,:)
 real, allocatable :: Lsum(:,:), Vorticity_write(:,:), Velocity(:,:)
-real, allocatable :: Particle(:,:), NumberPart(:), Vorticity(:,:)
+real, allocatable :: Particle(:,:), Vorticity(:,:)
 real, allocatable :: PartSeeder(:,:)
 real, allocatable :: X_VELOCITYTemp(:), Y_VELOCITYTemp(:), TKETemp(:), SDRTemp(:), Z_VORTICITYTemp(:), vtkMaskTemp(:)
 real, dimension(5) :: MeshCaracteristics
@@ -43,8 +42,6 @@ complex, allocatable :: L_fourier(:,:,:)
 
 character(len=:), allocatable :: File_path, FilterType, ScalingType, PathSave
 character(len=20) :: string_temp_print
-
-integer :: Parallel_computing
 
 logical :: dir_e
 
@@ -83,8 +80,8 @@ MeshCaracteristics(3) = y_min
 MeshCaracteristics(4) = y_max
 MeshCaracteristics(5) = delta
 
-nx = (x_max-x_min)/delta+1
-ny = (y_max-y_min)/delta+1
+nx = int((x_max-x_min)/delta+1)
+ny = int((y_max-y_min)/delta+1)
 
 ! Enable parallel computing
 Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
@@ -102,7 +99,7 @@ write_Vel = GetIntVtkValue("write_Vel")
 write_Vor = GetIntVtkValue("write_Vor")
 write_Lsum = GetIntVtkValue("write_Lsum")
 write_binary_format = GetIntVtkValue("write_binary_format")
-write_fourier = GetRealVtkValue("write_fourier")
+write_fourier = GetIntVtkValue("write_fourier")
 
 ! Particle number
 Nparticle = GetIntVtkValue("Nparticles")
@@ -113,7 +110,7 @@ Radius = GetIntVtkValue("Rconst")
 ! Time caracteristics
 dt = GetRealVtkValue("viz_interval")
 T = GetRealVtkValue("end_time")
-Nt = T/dt
+Nt = int(T/dt)
 
 ! Frequency caracteristics
 Number_freq = GetIntVtkValue("Number_freq")

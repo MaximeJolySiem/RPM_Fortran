@@ -60,7 +60,7 @@ module ModuleWrite
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,N,TimeStep,Condition
+		integer :: i,N,TimeStep,Condition
 		character(len=*) :: FileName
 
 		if (Condition == 0) then
@@ -86,7 +86,7 @@ module ModuleWrite
 		implicit none
 
 		real,dimension(:,:) :: DataToWrite
-		integer :: i,j,N,TimeStep,Condition
+		integer :: i,N,TimeStep,Condition
 		character(len=*) :: FileName
 
 		if (Condition == 0) then
@@ -111,7 +111,7 @@ module ModuleWrite
 		implicit none
 
 		complex,dimension(:,:,:) :: DataToWrite
-		integer :: i,j,N,Condition,Number_freq
+		integer :: i,Condition,Number_freq
 		character(len=*) :: FileName
 
 		if (Condition == 0) then
@@ -137,7 +137,7 @@ module ModuleWrite
 		implicit none
 
 		complex,dimension(:,:,:) :: DataToWrite
-		integer :: i,j,N,Condition,Number_freq
+		integer :: i,Condition,Number_freq
 		character(len=*) :: FileName
 
 		if (Condition == 0) then

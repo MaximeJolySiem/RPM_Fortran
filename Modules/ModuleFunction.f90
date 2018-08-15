@@ -299,7 +299,7 @@ module ModuleFunction
 
 		implicit none
 
-		real :: delta,x_grid,y_grid,TKE_grid,Lambda_grid,x_part,y_part,TKE_part,Lambda_part,temp2,R
+		real :: delta,x_grid,y_grid,TKE_grid,Lambda_part,R
 		integer :: nx,ny,N_particle,i,j,k,Radius
 		real, allocatable :: StreamFunction(:,:), temp(:,:)
 		real, dimension(:,:) :: Particle, TKE, Lambda, vtkMask

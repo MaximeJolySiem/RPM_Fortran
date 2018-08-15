@@ -6,7 +6,7 @@ module ModuleRead
 	function GetRealVtkValue(Word_to_search)
 
 		character*100 :: string
-		integer :: line_no, io, nlines, len_word
+		integer :: len_word
 		real :: GetRealVtkValue
 
 		character(len=*) :: Word_to_search
@@ -38,7 +38,7 @@ module ModuleRead
 	function GetIntVtkValue(Word_to_search)
 
 		character*100 :: string
-		integer :: line_no, io, nlines, len_word
+		integer :: len_word
 		integer :: GetIntVtkValue
 
 		character(len=*) :: Word_to_search
@@ -70,7 +70,7 @@ module ModuleRead
 	function GetStringVtkValue(StringToSearch)
 
 		character*200 :: string
-		integer :: line_no, io, nlines, len_word
+		integer :: len_word
 		character(len=*) :: StringToSearch
 		character(len=:), allocatable :: GetStringVtkValue
 

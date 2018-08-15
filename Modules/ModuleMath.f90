@@ -38,7 +38,6 @@ module ModuleMath
 	  real ( kind = 4 ) r2
 	  real ( kind = 4 ) r4_normal_01
 	  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-	  real ( kind = 4 ) r4_uniform_01
 	  real ( kind = 4 ) x
 
 	  r1 = rand()*0.999+0.001

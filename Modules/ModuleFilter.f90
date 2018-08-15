@@ -12,9 +12,9 @@ module ModuleFilter
 	real,dimension(8) :: HyperGeom2_Liep  = (/ 1.000000000000000,   0.960000000000000,   0.237037037037037,   0.026181605668785, &
 		& 0.001630688242346,   0.000065079621463, 0.000001804874835,   0.000000036790382 /)
 
-	double precision :: Liepmann_A=0.73510519389572273268
-	double precision :: Liepmann_B=1.85407467730137191843
-	double precision :: Liepmann_C=1.35195648013456945799
+	real :: Liepmann_A=0.73510519389572273268
+	real :: Liepmann_B=1.85407467730137191843
+	real :: Liepmann_C=1.35195648013456945799
 	
 	
 	real,dimension(7) :: HyperGeom1_VK  = (/ 1.,1.5,0.4602272727272727,0.058656417112299, &
@@ -22,10 +22,10 @@ module ModuleFilter
 	real,dimension(8) :: HyperGeom2_VK  = (/ 1.,1.040816326530612,0.26790247243087,0.030426591459741, &
 		& 0.001935131216840,0.000078535900579,0.000002208558563,0.000000045560159 /)
 
-	double precision :: VonKarman_constante_factor=1.665704432226795
-	double precision :: VonKarman_alpha_zeta=1.338985279065280
-	double precision :: VonKarman_B=0.94856635532996846076
-	double precision :: VonKarman_C=1.21673332546745177014
+	real :: VonKarman_constante_factor=1.665704432226795
+	real :: VonKarman_alpha_zeta=1.338985279065280
+	real :: VonKarman_B=0.94856635532996846076
+	real :: VonKarman_C=1.21673332546745177014
 
 	contains
 
