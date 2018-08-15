@@ -213,10 +213,10 @@ module ModuleFunction
 			
 
 			if (Particle(i,1) > MeshCaracteristics(2)-MeshCaracteristics(5)/2) then
-				RandomInjector = rand()
+				RandomInjector = (rand()*0.999999999999+0.000000000001)
 
 				if (RandomInjector<=Prob_top) then
-					RandomPosition = rand()
+					RandomPosition = (rand()*0.999999999999+0.000000000001)
 					ii = 1
 					do while(PartSeeder(1,ii)<RandomPosition)
 						ii = ii + 1
@@ -231,13 +231,13 @@ module ModuleFunction
 					& +Y_VELOCITY(1,ii))
 					
 					Particle(i,1) = NewPosition
-					Particle(i,2) = MeshCaracteristics(4) - rand()*vel_temp*dt
+					Particle(i,2) = MeshCaracteristics(4) - (rand()*0.999999999999+0.000000000001)*vel_temp*dt
 					Particle(i,3) = r4_normal_01 ()
 
 
 				elseif (Prob_top<RandomInjector) then
 					if (RandomInjector<=Prob_bot) then
-						RandomPosition = rand()
+						RandomPosition = (rand()*0.999999999999+0.000000000001)
 						ii = 1
 						do while(PartSeeder(3,ii)<RandomPosition)
 							ii = ii + 1
@@ -252,11 +252,11 @@ module ModuleFunction
 						& +Y_VELOCITY(1,ii))
 									
 						Particle(i,1) = NewPosition
-						Particle(i,2) = MeshCaracteristics(3) + rand()*vel_temp*dt
+						Particle(i,2) = MeshCaracteristics(3) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt
 						Particle(i,3) = r4_normal_01 ()
 						
 					else
-						RandomPosition = rand()
+						RandomPosition = (rand()*0.999999999999+0.000000000001)
 						ii = 1
 						do while(PartSeeder(2,ii)<RandomPosition)
 							ii = ii + 1
@@ -270,7 +270,7 @@ module ModuleFunction
 						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
 						& +X_VELOCITY(ii,1))
 					
-						Particle(i,1) = MeshCaracteristics(1) + rand()*vel_temp*dt
+						Particle(i,1) = MeshCaracteristics(1) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt
 						Particle(i,2) = NewPosition
 						Particle(i,3) = r4_normal_01 ()
 					end if
@@ -321,19 +321,19 @@ module ModuleFunction
 			uy_part = Get_value(x_part,y_part,MeshCaracteristics,Y_VELOCITY)
 			Particle(i,1) = x_part + ux_part*dt
 			Particle(i,2) = y_part + uy_part*dt
-			
 
 			if (Particle(i,1) > MeshCaracteristics(2)-MeshCaracteristics(5)/2) then
-				RandomInjector = rand()
+				RandomInjector = (rand()*0.999999999999+0.000000000001)
 
 				if (RandomInjector<=Prob_top) then
-					RandomPosition = rand()
+					RandomPosition = (rand()*0.999999999999+0.000000000001)
 					ii = 1
 					do while(PartSeeder(1,ii)<RandomPosition)
 						ii = ii + 1
 					end do
 					ii = ii-1
-					
+							
+
 					NewPosition = RandomPosition/(PartSeeder(1,ii+1)-PartSeeder(1,ii)) &
 					& +ii-1/(PartSeeder(1,ii+1)-PartSeeder(1,ii))*PartSeeder(1,ii)
 					NewPosition = MeshCaracteristics(1)+(NewPosition-1)*MeshCaracteristics(5)
@@ -342,19 +342,19 @@ module ModuleFunction
 					& +Y_VELOCITY(1,ii))
 					
 					Particle(i,1) = NewPosition
-					Particle(i,2) = MeshCaracteristics(4) - rand()*vel_temp*dt - MeshCaracteristics(5)/10
+					Particle(i,2) = MeshCaracteristics(4) - (rand()*0.999999999999+0.000000000001)*vel_temp*dt - MeshCaracteristics(5)/10
 					Particle(i,3) = r4_normal_01 ()
 
 
 				elseif (Prob_top<RandomInjector) then
 					if (RandomInjector<=Prob_bot) then
-						RandomPosition = rand()
+						RandomPosition = (rand()*0.999999999999+0.000000000001)
 						ii = 1
 						do while(PartSeeder(3,ii)<RandomPosition)
 							ii = ii + 1
 						end do
 						ii = ii-1
-						
+
 						NewPosition = RandomPosition/(PartSeeder(3,ii+1)-PartSeeder(3,ii)) &
 						& +ii-1/(PartSeeder(3,ii+1)-PartSeeder(3,ii))*PartSeeder(3,ii)
 						NewPosition = MeshCaracteristics(1)+(NewPosition-1)*MeshCaracteristics(5)
@@ -363,17 +363,17 @@ module ModuleFunction
 						& +Y_VELOCITY(1,ii))
 									
 						Particle(i,1) = NewPosition
-						Particle(i,2) = MeshCaracteristics(3) + rand()*vel_temp*dt + MeshCaracteristics(5)/10
+						Particle(i,2) = MeshCaracteristics(3) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt + MeshCaracteristics(5)/10
 						Particle(i,3) = r4_normal_01 ()
 						
 					else
-						RandomPosition = rand()
+						RandomPosition = (rand()*0.999999999999+0.000000000001)
 						ii = 1
 						do while(PartSeeder(2,ii)<RandomPosition)
 							ii = ii + 1
 						end do
 						ii = ii-1
-						
+											
 						NewPosition = RandomPosition/(PartSeeder(2,ii+1)-PartSeeder(2,ii)) &
 						& +ii-1/(PartSeeder(2,ii+1)-PartSeeder(2,ii))*PartSeeder(2,ii)
 						NewPosition = MeshCaracteristics(3)+(NewPosition-1)*MeshCaracteristics(5)
@@ -381,7 +381,7 @@ module ModuleFunction
 						vel_temp = abs(RandomPosition*(X_VELOCITY(ii+1,1)-X_VELOCITY(ii,1)) &
 						& +X_VELOCITY(ii,1))
 					
-						Particle(i,1) = MeshCaracteristics(1) + rand()*vel_temp*dt + MeshCaracteristics(5)/10
+						Particle(i,1) = MeshCaracteristics(1) + (rand()*0.999999999999+0.000000000001)*vel_temp*dt + MeshCaracteristics(5)/10
 						Particle(i,2) = NewPosition
 						Particle(i,3) = r4_normal_01 ()
 					end if
