@@ -27,7 +27,7 @@ integer :: IsSave
 integer :: Get_Number_Thread
 integer :: Number_freq
 
-INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks, nb_inter
+INTEGER :: nb_ticks_t0,nb_ticks_initial, nb_ticks_final, nb_ticks_max, nb_ticks_sec, nb_ticks
 REAL :: elapsed_time  ! real time in seconds
 
 real, allocatable :: X_VELOCITY(:,:), Y_VELOCITY(:,:), TKE(:,:), SDR(:,:), Z_VORTICITY(:,:), vtkMask(:,:)
@@ -246,7 +246,6 @@ do i = Init_T,Nt
 
 
 	call MoveParticle(dt,MeshCaracteristics,Particle,X_VELOCITY,Y_VELOCITY,PartSeeder)
-	CALL SYSTEM_CLOCK(COUNT=nb_inter)
 	call Calc_Fluctuation(MeshCaracteristics,Particle,TKE,Lambda,StreamFunction,vtkMask, &
 		& Radius,FilterType,ScalingType)
 
