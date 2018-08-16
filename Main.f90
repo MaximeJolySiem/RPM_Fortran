@@ -118,7 +118,6 @@ Number_freq = GetIntVtkValue("Number_freq")
 
 
 
-
 !Verify and create Data folders
 if (write_Particle+write_Vel+write_Vor+write_Lsum > 0) then
 	inquire(file='./Output_time/.', exist=dir_e)
