@@ -80,8 +80,8 @@ MeshCaracteristics(3) = y_min
 MeshCaracteristics(4) = y_max
 MeshCaracteristics(5) = delta
 
-nx = int((x_max-x_min)/delta+1)
-ny = int((y_max-y_min)/delta+1)
+nx = nint((x_max-x_min)/delta+1)
+ny = nint((y_max-y_min)/delta+1)
 
 ! Enable parallel computing
 Get_Number_Thread = GetIntVtkValue("Parallel_Number_Thread")
@@ -357,12 +357,16 @@ do i = Init_T,Nt
 	TimeStep = TimeStep+1
 end do
 
+
+
+
+
 if (write_fourier == 1) then
 	write(*,*) "WRITING FREQUENCY DATA"
 	if (write_binary_format == 0) then
-		call WriteFourier(L_fourier,'fw_lamb2_',write_fourier)
+		call WriteFourier(L_fourier,'fw_lamb_',write_fourier)
 	else
-		call WriteBinFourier(L_fourier,'fw_lamb5e5_',write_fourier)
+		call WriteBinFourier(L_fourier,'fw_lamb_',write_fourier)
 	end if
 end if
 

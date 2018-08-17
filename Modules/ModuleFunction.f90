@@ -59,6 +59,14 @@ module ModuleFunction
 		Vx_left(:) = X_VELOCITY(:,1)
 		Vy_top(:) = abs(Y_VELOCITY(1,:))
 		Vy_bot(:) = abs(Y_VELOCITY(ny,:))
+		do i = 1,nx
+			if (Y_VELOCITY(1,i) < 0) then
+				Vy_top(i) = 0
+			end if
+			if (Y_VELOCITY(ny,i) > 0) then
+				Vy_bot(i) = 0
+			end if
+		end do
 
 		do i = 1,nx
 			GetSeeder(1,i) = trapz(Vy_top(1:i),delta)
@@ -127,7 +135,7 @@ module ModuleFunction
 	
 	real,dimension(:,:) :: vtkMask
 	real,dimension(5) :: MeshCaracteristics
-	real, allocatable :: InitParticle(:,:), ParticleSeeder(:,:), NumberPart(:)
+	real, allocatable :: InitParticle(:,:), ParticleSeeder(:,:), NumberPart(:), Vx_left(:), Vy_bot(:), Vy_top(:)
 	integer :: Nparticle, Particle_available_counter, k, i
 	real :: x_min, x_max, y_min, y_max
 	
@@ -188,15 +196,30 @@ module ModuleFunction
 		real :: dt,x_part,y_part,ux_part,uy_part, vel_temp
 		real :: Prob_top, Prob_bot
 		real :: RandomInjector,RandomPosition,NewPosition
-		integer :: i,N,ny,ii
+		integer :: i,N,ny,nx,ii
 		real,dimension(:,:) :: Particle, X_VELOCITY, Y_VELOCITY, PartSeeder
 		real,dimension(5) :: MeshCaracteristics
+		real,allocatable :: Vx_left(:), Vy_bot(:), Vy_top(:)
 		
+		nx = size(X_VELOCITY(1,:))
 		ny = size(X_VELOCITY(:,1))
 
+		allocate(Vx_left(ny), Vy_bot(nx), Vy_top(nx))
 
-		Prob_top = sum(abs(Y_VELOCITY(1,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
-		Prob_bot = Prob_top+sum(abs(Y_VELOCITY(ny,:)))/(sum(abs(Y_VELOCITY(1,:)))+sum(abs(Y_VELOCITY(ny,:)))+sum(X_VELOCITY(:,1)))
+		Vx_left(:) = X_VELOCITY(:,1)
+		Vy_top(:) = abs(Y_VELOCITY(1,:))
+		Vy_bot(:) = abs(Y_VELOCITY(ny,:))
+		do i = 1,nx
+			if (Y_VELOCITY(1,i) < 0) then
+				Vy_top(i) = 0
+			end if
+			if (Y_VELOCITY(ny,i) > 0) then
+				Vy_bot(i) = 0
+			end if
+		end do
+
+		Prob_top = sum(abs(Vy_top(:)))/(sum(abs(Vy_top(:)))+sum(abs(Vy_bot(:)))+sum(X_VELOCITY(:,1)))
+		Prob_bot = Prob_top+sum(abs(Vy_bot(:)))/(sum(abs(Vy_top(:)))+sum(abs(Vy_bot(:)))+sum(Vx_left))
 
 
 		N = size(Particle(:,1))
